@@ -52,3 +52,12 @@
 
 ## Week 5
 
+### 18 October 2022
+
+* *1 hour* Updating timelog, Writing up meeting notes and pushing them to GitHub repo
+
+### 19 October 2022
+
+* *3 hours* Understanding and translating Niall Barr's ACJ algorithm to JavaScript
+* *1 hour* Building comparison page
+* *1 hour* Thinking of ways to test my code against Niall Barr's

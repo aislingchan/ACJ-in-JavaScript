@@ -41,3 +41,15 @@
 * Build web page for comparing scripts. Implement functionality for selecting one of the two scripts so we can have input into our algorithm
 * Read more about ACJ. Go through The Method of ACJ paper again.
 * Think about how to test the web app against Niall Barr's
+
+## Week 5 (20 Oct 2022)
+
+ * We discussed how to test my code against Niall Barr's.
+ * Jeremy suggested writing unit tests and creating a driver that would feed input into my project and run simulations of comparisons
+ * Jeremy also suggested I use an SQL database as that is what Niall Barr used. This would make testing and rewriting his code much easier.
+
+### Plan for next week:
+
+* Write a driver to feed input into my project and run simulations of comparisons
+* Write unit tests
+* Set up Niall Barr's project on my own machine
