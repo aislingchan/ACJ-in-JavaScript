@@ -1,8 +1,16 @@
+import * as database from './database.js';
+
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database("./acj.db", sqlite3.OPEN_READWRITE, (err) => {
+    if (err) return console.error(err.message);
+})
+
 class Acj {
     constructor(){
-        this.papers = []; //list of Submissions
+        this.papers = {}; //collection of submissions ids and submissions
     }
 
+    // recalculates the score for each paper based on its previous comparisons
     recalc1(round){
         this.updateRanks();
         for(const [n, pp] of this.papers.entries()){
@@ -243,3 +251,127 @@ function nextOffsetAlternating(after, begin, count){
     }
 
 }
+
+async function prepareNewAcjRound(db, resource){
+    const engine = new Acj();
+    let subs = await database.getAcjSubmissions(db, 2);
+    for(let sub in subs){
+        let acjPaper = new Submission(sub.id);
+        acjPaper._latestScore = sub.latestScore;
+        acjPaper.rank = sub.rank;
+        let lcmps = await database.retrieveAcjComparisonMatching(db,'left_id', sub.id);
+        if(lcmps){
+            for(let cmp in lcmps){
+                if(cmp.done > 0){
+                    acjPaper.addComparison(cmp.rightId, cmp.leftWon, cmp.round);
+                }
+            }
+        }
+        let rcmps = await database.retrieveAcjComparisonMatching(db, 'right_id', sub.id);
+        if(rcmps){
+            for(let cmp in rcmps){
+                if(cmp.done > 0){
+                    acjPaper.addComparison(cmp.leftId, cmp.rightWon, cmp.round);
+                }
+            }
+        }
+        engine.papers[sub.id] = acjPaper;
+    }
+    if(resource.round >= 0){
+        engine.recalc1(resource.round);
+        for(let p in engine.papers){
+            subs[p.id].latestScore = p._latestScore;
+            subs[p.id].rank = p.rank;
+            database.updateSubmission(db, subs[p.id]);
+        }
+    }
+    const pairings = engine.getPairingsByRank();
+    resource.round += 1;
+    database.updateResource(db,resource);
+    for(let p in pairings){
+        let cmpr = new acjComparison();
+        cmpr.activity_id = resource.id;
+        cmpr.leftId = p[0];
+        cmpr.rightId = p[1];
+        cmpr.allocated = 0;
+        cmpr.done = 0;
+        cmpr.round = resource.round;
+        database.insertComparison(db, cmpr);
+    }
+}
+
+function getAComparison(resource, round, uname, avoid, db){
+    let takeComp;
+    let dueComps = database.getUsersIncompleteComparisons(db, round, uname, resource.id);
+    if(dueComps.length > 0){
+        takeComp = dueComps[0];
+        takeComp.allocated = new Date();
+        database.updateComparison(db, takeComp);
+    }
+    else{
+        takeComp = false;
+        dueComps = database.getUnallocatedComparisons(db, round, resource.id);
+        if(dueComps.length == 0){
+            clearOverdueComps(resource, db);
+            dueComps = database.getUnallocatedComparisons(db, round, resource.id);
+            let n = 0;
+            while((takeComp == false) && (n < dueComps.length)){
+                if(avoid.indexOf(dueComps[n].id) == -1){
+                    takeComp = dueComps[n];
+                    takeComp.allocated = new Date();
+                    takeComp.user_id = uname;
+                    database.updateComparison(db,takeComp);
+                }
+                n++;
+            }
+
+        }
+        return takeComp;
+    }
+}
+
+function clearOverdueComps(resource, timelimit = 600, db){
+    let dueComps = database.getIncompleteComparisons(db, resource.round);
+    const pretime = new Date() - timelimit;
+    for(let d in dueComps){
+        if((d.allocated < pretime) && (d.allocated > 0)){
+            d.allocated = 0;
+            d.user_id = '';
+            database.updateComparison(db, d);
+        }
+    }
+}
+
+// TODO get marker's decision and updates comparison in database
+//  (basic version, must chose either left or right)
+function checkInput(activity, userInfo, cmpId, leftWon, db){
+    let cmp = database.retrieveAcjComparison(db, cmpId);
+    if(leftWon){
+        cmp.leftWon = true;
+        cmp.done = new Date();
+        cmp.madeBy_id = userInfo.user.id;
+    }
+    else{
+        cmp.rightWon = true;
+        cmp.done = new Date();
+        cmp.madeBy_id = userInfo.user.id;
+    }
+    database.updateComparison(db, cmp);
+}
+
+class acjComparison{
+    constructor(){
+        this.id = null;
+        this.user_id = null;
+        this.activity_id = null;
+        this.madeBy_id = null;
+        this.round = 0;
+        this.leftId = null;
+        this.rightId = null;
+        this.leftWon = false;
+        this.rightWon = false;
+        this.allocated = new Date();
+        this.done = new Date();
+    }
+}
+
