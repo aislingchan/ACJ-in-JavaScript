@@ -47,9 +47,23 @@
  * We discussed how to test my code against Niall Barr's.
  * Jeremy suggested writing unit tests and creating a driver that would feed input into my project and run simulations of comparisons
  * Jeremy also suggested I use an SQL database as that is what Niall Barr used. This would make testing and rewriting his code much easier.
+ * Next meeting 2:30pm Thursday 27 October 2022
 
 ### Plan for next week:
 
 * Write a driver to feed input into my project and run simulations of comparisons
 * Write unit tests
 * Set up Niall Barr's project on my own machine
+
+## Week 6 (27 Oct 2022)
+
+* We looked at the code I had written so far
+* Jeremy suggested that a possible extension to the project would be to have different modes for allocating pairs of papers. For example, there could be a mode for students where the papers allocated to them are very different in quality. This would test a student's understanding of what a "good" paper is versus a "bad" one.
+* Next meeting 11am Thursday 3 November 2022
+
+### Plan for next week:
+
+* Finish writing the driver
+* Add a function which chooses the "better" paper from a pair based on some answer key
+* Run simulations of my project
+* Run Niall's project on my own machine and compare it's results to mine
