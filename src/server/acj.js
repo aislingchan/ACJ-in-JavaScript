@@ -1,18 +1,20 @@
 import * as database from './database.js';
 
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database("./acj.db", sqlite3.OPEN_READWRITE, (err) => {
-    if (err) return console.error(err.message);
-})
+// const sqlite3 = require('sqlite3').verbose();
+// const db = new sqlite3.Database("./acj.db", sqlite3.OPEN_READWRITE, (err) => {
+//     if (err) return console.error(err.message);
+// })
 
-class Acj {
+export class Acj {
     constructor(){
-        this.papers = {}; //collection of submissions ids and submissions
+        this.papers = []; //collection of submissions ids and submissions
     }
 
     // recalculates the score for each paper based on its previous comparisons
     recalc1(round){
+        console.log("in recalc1");
         this.updateRanks();
+        console.log("updated ranks");
         for(const [n, pp] of this.papers.entries()){
             let sc = 0;
             let cmprank;
@@ -55,13 +57,18 @@ class Acj {
     }
 
     updateRanks(){
+        console.log("in updateRanks");
         let rankList = [];
-        for(let p in this.papers){
+        console.log(this.papers);
+        for(let p of this.papers){
+            console.log("in for loop papers");
+            //console.log(p);
             rankList.push({
                 id: p.id,
                 score: p.latestScore()
             });
         }
+        //console.log(rankList);
         rankList.sort(cmp2);
         for(let n = 0; n < rankList.length; n++){
             this.papers[rankList[n][id]].rank = n;
@@ -136,7 +143,7 @@ class Acj {
     }
 }
 
-class Submission {
+export class Submission {
     constructor(id){
         this.id = id;
         this.perfectScore = null;
@@ -175,7 +182,7 @@ class Submission {
 }
 
 //Compares two submissions based on latest score
-function cmp(a, b){
+export function cmp(a, b){
     if(a.latestScore() == b.latestScore()){
         return 0;
     }
@@ -183,7 +190,7 @@ function cmp(a, b){
 }
 
 //Compares two submissions based on score
-function cmp2(a, b){
+export function cmp2(a, b){
     if(a[score] == b[score]){
         return 0;
     }
@@ -196,7 +203,7 @@ function cmp2(a, b){
 //if after is false, returns middle index of the list
 //if after is an index in the first half of the list then it calculates and returns an index in the second half 
 //of the list, unless the calculated index in not within range (in that case it returns false)
-function nextAlternating(after, count){
+export function nextAlternating(after, count){
     let next; // index of the list that will be return
     const start = parseInt(floor((count / 2) - 0.5)); //middle index of the list
     if(after === false){
@@ -216,7 +223,7 @@ function nextAlternating(after, count){
 
 //like nextAlternating but instead of pivoting around the middle index,
 //the function pivots around a given index (begin)
-function nextOffsetAlternating(after, begin, count){
+export function nextOffsetAlternating(after, begin, count){
     let start = begin;
     let next;
     if(start < 0){
@@ -252,15 +259,23 @@ function nextOffsetAlternating(after, begin, count){
 
 }
 
-async function prepareNewAcjRound(db, resource){
+export async function prepareNewAcjRound(db, resource){
     const engine = new Acj();
-    let subs = await database.getAcjSubmissions(db, 2);
-    for(let sub in subs){
+    console.log("created ACJ object");
+    console.log(resource.id)
+    let subs = await database.getAcjSubmissions(db, resource.id);
+    console.log("got submissions")
+    for(let sub of subs){
+        console.log("in for loop");
         let acjPaper = new Submission(sub.id);
         acjPaper._latestScore = sub.latestScore;
         acjPaper.rank = sub.rank;
+        console.log("before retrieve comp matching left_id");
+        console.log(`sub id: ${sub.id}`);
         let lcmps = await database.retrieveAcjComparisonMatching(db,'left_id', sub.id);
-        if(lcmps){
+        console.log("got comparisons with matching left_id");
+        if(lcmps.length > 0){
+            console.log("left cmps exist");
             for(let cmp in lcmps){
                 if(cmp.done > 0){
                     acjPaper.addComparison(cmp.rightId, cmp.leftWon, cmp.round);
@@ -268,6 +283,7 @@ async function prepareNewAcjRound(db, resource){
             }
         }
         let rcmps = await database.retrieveAcjComparisonMatching(db, 'right_id', sub.id);
+        console.log("got comparisons with matching right_id");
         if(rcmps){
             for(let cmp in rcmps){
                 if(cmp.done > 0){
@@ -278,8 +294,11 @@ async function prepareNewAcjRound(db, resource){
         engine.papers[sub.id] = acjPaper;
     }
     if(resource.round >= 0){
+        console.log("Before recalc1 call");
         engine.recalc1(resource.round);
+        console.log("after recalc1");
         for(let p in engine.papers){
+            console.log(subs[p.id].latestScore)
             subs[p.id].latestScore = p._latestScore;
             subs[p.id].rank = p.rank;
             database.updateSubmission(db, subs[p.id]);
@@ -300,7 +319,7 @@ async function prepareNewAcjRound(db, resource){
     }
 }
 
-function getAComparison(resource, round, uname, avoid, db){
+export function getAComparison(resource, round, uname, avoid, db){
     let takeComp;
     let dueComps = database.getUsersIncompleteComparisons(db, round, uname, resource.id);
     if(dueComps.length > 0){
@@ -330,7 +349,7 @@ function getAComparison(resource, round, uname, avoid, db){
     }
 }
 
-function clearOverdueComps(resource, timelimit = 600, db){
+export function clearOverdueComps(resource, timelimit = 600, db){
     let dueComps = database.getIncompleteComparisons(db, resource.round);
     const pretime = new Date() - timelimit;
     for(let d in dueComps){
@@ -342,9 +361,9 @@ function clearOverdueComps(resource, timelimit = 600, db){
     }
 }
 
-// TODO get marker's decision and updates comparison in database
+// get marker's decision and updates comparison in database
 //  (basic version, must chose either left or right)
-function checkInput(activity, userInfo, cmpId, leftWon, db){
+export function checkInput(activity, userInfo, cmpId, leftWon, db){
     let cmp = database.retrieveAcjComparison(db, cmpId);
     if(leftWon){
         cmp.leftWon = true;
@@ -359,7 +378,7 @@ function checkInput(activity, userInfo, cmpId, leftWon, db){
     database.updateComparison(db, cmp);
 }
 
-class acjComparison{
+export class acjComparison{
     constructor(){
         this.id = null;
         this.user_id = null;
@@ -375,3 +394,4 @@ class acjComparison{
     }
 }
 
+// function for choosing the "better" paper from a pair based on an anwser key
