@@ -49,6 +49,7 @@
 * *1 hour* Making wireframes
 * *1 hour* Researching databases to use - Firebase, MongoDB
 * *1 hour* Translating Niall Barr's ACJ algorithm to JavaScript
+* *0.5 hours* Meeting with Jeremy
 
 ## Week 5
 
@@ -61,3 +62,33 @@
 * *3 hours* Understanding and translating Niall Barr's ACJ algorithm to JavaScript
 * *1 hour* Building comparison page
 * *1 hour* Thinking of ways to test my code against Niall Barr's
+
+### 20 October 2022
+
+* *0.5 hours* Meeting with Jeremy
+
+## Week 6
+
+### 25 October 2022
+
+* *0.5 hours* Updating meeting notes and adding tasks to Trello board
+* *0.5 hours* Researching JavaScript testing frameworks
+* *2.5 hours* Understanding and making notes on Niall Barr's project
+
+### 26 October 2022
+
+* *7 hours* Converting more of Niall Barr's PHP code into JavaScript
+
+### 27 October 2022
+
+* *0.5 hours* Meeting with Jeremy
+
+## Week 7
+
+### 2 November 2022
+
+* *6 hours* Writing driver for running my code
+
+### 3 November 2022
+
+* *0.5 hours* Meeting with Jeremy
