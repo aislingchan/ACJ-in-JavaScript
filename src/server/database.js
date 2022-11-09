@@ -34,7 +34,7 @@ export function addDummyAcjResources(db, n){
         let d = new Date()
         for(let i=0; i < n; i++){
             console.log(`adding resource with date ${d.toISOString()}`);
-            db.run(query, [d.toISOString(), 1], (err) => {
+            db.run(query, [d.toISOString(), 0], (err) => {
                 if (err) return console.error(err.message);
             });
             d.setDate(d.getDate() + 1);
@@ -75,7 +75,11 @@ export function getAcjSubmissions(db, activity_id){
         db.all(query,[], (err, rows) => {
             if (err) return console.error(err.message);
             if (rows.length != 0){
-                resolve(rows);
+                const subs = {};
+                for(let r of rows){
+                    subs[r.id] = r;
+                }
+                resolve(subs);
             }
             else{
                 reject("No submission found with the given parameters");
@@ -135,7 +139,7 @@ export function retrieveAcjComparisonMatching(db, field, val){
     return new Promise((resolve, reject) => {
         db.all(query, [val], (err, rows) => {
             if (err) return console.error(err.message);
-            console.log(rows);
+            console.log(`Rows retrieved: ${rows}`);
             resolve(rows);
         });
     });
@@ -157,14 +161,14 @@ export function updateResource(db, resource){
 
 export function updateComparison(db, cmp){
     let query = `UPDATE acjComparison SET user_id=?, activity_id=?, madeBy_id=?, round=?, left_id=?, right_id=?, leftWon=?, rightWon=?, allocated=?, done=?;`;
-    db.run(query,[cmp.user_id, cmp.activity_id, cmp.madeBy_id, cmp.round, cmp.leftId, cmp.rightId, cmp.leftWon, cmp.rightWon, cmp.allocated.toISOString(), cmp.done.toISOString()], (err) => {
+    db.run(query,[cmp.user_id, cmp.activity_id, cmp.madeBy_id, cmp.round, cmp.leftId, cmp.rightId, cmp.leftWon, cmp.rightWon, cmp.allocated, cmp.done], (err) => {
         if (err) return console.error(err.message);
     })
 }
 
 export function insertComparison(db, cmp){
-    let query = `INSERT INTO acjComparison (user_id, activity_id, madeBy_id, round, left_id, right_id, leftWon, rightWon, allocated, done) VALUES (?,?,?,?,?,?,?,?,?);`;
-    db.run(query, [cmp.user_id, cmp.activity_id, cmp.madeBy_id, cmp.round, cmp.leftId, cmp.rightId, cmp.leftWon, cmp.rightWon, cmp.allocated.toISOString(), cmp.done.toISOString()], (err) => {
+    let query = `INSERT INTO acjComparison (user_id, activity_id, madeBy_id, round, left_id, right_id, leftWon, rightWon, allocated, done) VALUES (?,?,?,?,?,?,?,?,?,?);`;
+    db.run(query, [cmp.user_id, cmp.activity_id, cmp.madeBy_id, cmp.round, cmp.leftId, cmp.rightId, cmp.leftWon, cmp.rightWon, cmp.allocated, cmp.done], (err) => {
         if(err) return console.error(err.message);
     })
 } 

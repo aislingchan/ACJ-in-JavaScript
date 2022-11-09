@@ -7,7 +7,7 @@ import * as database from './database.js';
 
 export class Acj {
     constructor(){
-        this.papers = []; //collection of submissions ids and submissions
+        this.papers = {}; //collection of submissions ids and submissions
     }
 
     // recalculates the score for each paper based on its previous comparisons
@@ -15,11 +15,11 @@ export class Acj {
         console.log("in recalc1");
         this.updateRanks();
         console.log("updated ranks");
-        for(const [n, pp] of this.papers.entries()){
+        for(let pID in this.papers){
             let sc = 0;
             let cmprank;
-            if(pp.comparisons.length){
-                for(let cmp in pp.comparisons){
+            if(this.papers[pID].comparisons.length){
+                for(let cmp in this.papers[pID].comparisons){
                     if(round <= 4){
                         cmprank = this.papers[cmp[withID]].rank;
                         if(cmp[won]){
@@ -50,46 +50,50 @@ export class Acj {
                         }
                     }
                 }
-                sc = sc / pp.comparisons.length;
+                sc = sc / this.papers[pID].comparisons.length;
             }
-            pp.addScore(round, sc);
+            this.papers[pID].addScore(round, sc);
         }
     }
 
     updateRanks(){
         console.log("in updateRanks");
         let rankList = [];
+        console.log("ACJ Papers: ");
         console.log(this.papers);
-        for(let p of this.papers){
-            console.log("in for loop papers");
-            //console.log(p);
+        for(let paperID in this.papers){
+            // console.log("in for loop for papers");
+            console.log(`paperID: ${paperID}`);
             rankList.push({
-                id: p.id,
-                score: p.latestScore()
+                id: paperID,
+                score: this.papers[paperID].latestScore()
             });
         }
-        //console.log(rankList);
+        console.log("ranklist");
+        console.log(rankList);
         rankList.sort(cmp2);
         for(let n = 0; n < rankList.length; n++){
-            this.papers[rankList[n][id]].rank = n;
+            this.papers[rankList[n].id].rank = n;
         }
     }
 
     getPairingsByRank(){
+        console.log("in getPairingsByRank");
         this.updateRanks();
         let targetsList = [];
         let toPairList = [];
         let pairedList = {};
         let pairedCount = 0;
 
-        for(let p in this.papers){
+        for(let pID in this.papers){
+            console.log("in getPairings for loop of papers");
             //Calculate a score for each paper based on its past comparisons
             let cws = 0;
-            if(p.comparisons.length > 0){
+            if(this.papers[pID].comparisons.length > 0){
                 let n = 0;
-                let rank = p.rank;
+                let rank = this.papers[pID].rank;
                 let scci = 0;
-                for(let c in p.comparisons){
+                for(let c in this.papers[pID].comparisons){
                     n++;
                     let compRank = this.papers[c[withID]].rank;
                     scci += ((rank - compRank) / (1 + Math.sqrt((rank-compRank)*(rank-compRank))));
@@ -98,43 +102,50 @@ export class Acj {
             }
 
             targetsList.push({
-                id: p.id,
+                id: pID,
                 score: cws,
-                rank: p.rank,
-                targetRank: parseInt(floor(cws+0.5)),
+                rank: this.papers[pID].rank,
+                targetRank: parseInt(Math.floor(cws+0.5)),
                 paired: false
             });
             toPairList.push({
-                id: p.id,
-                score: p.rank,
-                targetRank: parseInt(floor(cws+0.5)),
+                id: pID,
+                score: this.papers[pID].rank,
+                targetRank: parseInt(Math.floor(cws+0.5)),
                 paired: false
             });
-            pairedList[p.id] = false;
+            pairedList[pID] = false;
         }
+        console.log("Before sorting");
+        console.log(targetsList);
+        console.log(toPairList);
         targetsList.sort(cmp2);//sorting by score
         toPairList.sort(cmp2);//sorting by score
+        console.log("After sorting");
+        console.log(targetsList);
+        console.log(toPairList);
         const s = toPairList.length;
         let pairings = [];
         let nextID = nextAlternating(false, s);
         while(nextID !== false){
             let pl = toPairList[nextID];
             //pair the paper if it is unpaired
-            if(pairedList[pl[id]] === false){
-                pairedList[pl[id]] = true;
-                let suggestID = nextOffsetAlternating(false, pl[targetRank], s);
-                while((suggestID !== false) && ((pairedList[targetsList[suggestID][id]]) || (targetsList[suggestID][id]==pl[id]) || (this.papers[pl[id]].countComparisons(targetsList[suggestID][id])))){
-                    suggestID = nextOffsetAlternating(suggestID, pl[targetsRank], s);
+            if(pairedList[pl.id] === false){
+                pairedList[pl.id] = true;
+                console.log(pairedList);
+                let suggestID = nextOffsetAlternating(false, pl.targetRank, s);
+                while((suggestID !== false) && ((pairedList[targetsList[suggestID].id]) || (targetsList[suggestID].id==pl.id) || (this.papers[pl.id].countComparisons(targetsList[suggestID].id)))){
+                    suggestID = nextOffsetAlternating(suggestID, pl.targetRank, s);
                 }
                 if(suggestID === false){
-                    suggestID = nextOffsetAlternating(false, pl[targetRank], s);
-                    while((suggestID !== false) && (targetsList[suggestID][id]==pl[id])){
-                        suggestID = nextOffsetAlternating(suggestID, pl[targetRank], s);
+                    suggestID = nextOffsetAlternating(false, pl.targetRank, s);
+                    while((suggestID !== false) && (targetsList[suggestID].id==pl.id)){
+                        suggestID = nextOffsetAlternating(suggestID, pl.targetRank, s);
                     }
                 }
                 if(suggestID !== false){
-                    pairedList[targetsList[suggestID][id]] = true;
-                    pairings.push([pl[id], targetsList[suggestID][id]]);
+                    pairedList[targetsList[suggestID].id] = true;
+                    pairings.push([pl.id, targetsList[suggestID].id]);
                 }
             }
             nextID = nextAlternating(nextID, s);
@@ -191,10 +202,10 @@ export function cmp(a, b){
 
 //Compares two submissions based on score
 export function cmp2(a, b){
-    if(a[score] == b[score]){
+    if(a.score == b.score){
         return 0;
     }
-    return (a[score] < b[score]) ? -1 : 1;
+    return (a.score < b.score) ? -1 : 1;
 }
 
 //param after: index of a list or false
@@ -205,7 +216,7 @@ export function cmp2(a, b){
 //of the list, unless the calculated index in not within range (in that case it returns false)
 export function nextAlternating(after, count){
     let next; // index of the list that will be return
-    const start = parseInt(floor((count / 2) - 0.5)); //middle index of the list
+    const start = parseInt(Math.floor((count / 2) - 0.5)); //middle index of the list
     if(after === false){
         next = start;
     }
@@ -262,18 +273,20 @@ export function nextOffsetAlternating(after, begin, count){
 export async function prepareNewAcjRound(db, resource){
     const engine = new Acj();
     console.log("created ACJ object");
-    console.log(resource.id)
+    //console.log(`Resource id: ${resource.id}`);
     let subs = await database.getAcjSubmissions(db, resource.id);
-    console.log("got submissions")
-    for(let sub of subs){
-        console.log("in for loop");
-        let acjPaper = new Submission(sub.id);
-        acjPaper._latestScore = sub.latestScore;
-        acjPaper.rank = sub.rank;
-        console.log("before retrieve comp matching left_id");
-        console.log(`sub id: ${sub.id}`);
-        let lcmps = await database.retrieveAcjComparisonMatching(db,'left_id', sub.id);
-        console.log("got comparisons with matching left_id");
+    //console.log("got submissions for resource");
+    console.log("subs");
+    console.log(subs);
+    for(let subID in subs){
+        //console.log("iterating through submissions");
+        let acjPaper = new Submission(subID);
+        acjPaper._latestScore = subs[subID].latestScore;
+        acjPaper.rank = subs[subID].rank;
+        console.log(`sub id: ${subID}`);
+        //console.log("before retrieve comp matching left_id");
+        let lcmps = await database.retrieveAcjComparisonMatching(db,'left_id', subID);
+        //console.log("got comparisons with matching left_id");
         if(lcmps.length > 0){
             console.log("left cmps exist");
             for(let cmp in lcmps){
@@ -282,8 +295,8 @@ export async function prepareNewAcjRound(db, resource){
                 }
             }
         }
-        let rcmps = await database.retrieveAcjComparisonMatching(db, 'right_id', sub.id);
-        console.log("got comparisons with matching right_id");
+        let rcmps = await database.retrieveAcjComparisonMatching(db, 'right_id', subID);
+        //console.log("got comparisons with matching right_id");
         if(rcmps){
             for(let cmp in rcmps){
                 if(cmp.done > 0){
@@ -291,23 +304,27 @@ export async function prepareNewAcjRound(db, resource){
                 }
             }
         }
-        engine.papers[sub.id] = acjPaper;
+        engine.papers[subID] = acjPaper;
     }
     if(resource.round >= 0){
         console.log("Before recalc1 call");
         engine.recalc1(resource.round);
         console.log("after recalc1");
-        for(let p in engine.papers){
-            console.log(subs[p.id].latestScore)
-            subs[p.id].latestScore = p._latestScore;
-            subs[p.id].rank = p.rank;
-            database.updateSubmission(db, subs[p.id]);
+        console.log(engine.papers);
+        for(let pID in engine.papers){
+            //console.log(subs[pID].latestScore)
+            subs[pID].latestScore = engine.papers[pID]._latestScore;
+            subs[pID].rank = engine.papers[pID].rank;
+            database.updateSubmission(db, subs[pID]);
         }
     }
     const pairings = engine.getPairingsByRank();
+    console.log("PAIRINGS");
+    console.log(pairings);
     resource.round += 1;
+    console.log(`Resource round: ${resource.round}`);
     database.updateResource(db,resource);
-    for(let p in pairings){
+    for(let p of pairings){
         let cmpr = new acjComparison();
         cmpr.activity_id = resource.id;
         cmpr.leftId = p[0];
