@@ -12,9 +12,9 @@ export class Acj {
 
     // recalculates the score for each paper based on its previous comparisons
     recalc1(round){
-        console.log("in recalc1");
+        //console.log("in recalc1");
         this.updateRanks();
-        console.log("updated ranks");
+        //console.log("updated ranks");
         for(let pID in this.papers){
             let sc = 0;
             let cmprank;
@@ -57,20 +57,20 @@ export class Acj {
     }
 
     updateRanks(){
-        console.log("in updateRanks");
+        //console.log("in updateRanks");
         let rankList = [];
-        console.log("ACJ Papers: ");
-        console.log(this.papers);
+        //console.log("ACJ Papers: ");
+        //console.log(this.papers);
         for(let paperID in this.papers){
             // console.log("in for loop for papers");
-            console.log(`paperID: ${paperID}`);
+            //console.log(`paperID: ${paperID}`);
             rankList.push({
                 id: paperID,
                 score: this.papers[paperID].latestScore()
             });
         }
-        console.log("ranklist");
-        console.log(rankList);
+        //console.log("ranklist");
+        //console.log(rankList);
         rankList.sort(cmp2);
         for(let n = 0; n < rankList.length; n++){
             this.papers[rankList[n].id].rank = n;
@@ -78,7 +78,7 @@ export class Acj {
     }
 
     getPairingsByRank(){
-        console.log("in getPairingsByRank");
+        //console.log("in getPairingsByRank");
         this.updateRanks();
         let targetsList = [];
         let toPairList = [];
@@ -86,7 +86,7 @@ export class Acj {
         let pairedCount = 0;
 
         for(let pID in this.papers){
-            console.log("in getPairings for loop of papers");
+            //console.log("in getPairings for loop of papers");
             //Calculate a score for each paper based on its past comparisons
             let cws = 0;
             if(this.papers[pID].comparisons.length > 0){
@@ -116,14 +116,14 @@ export class Acj {
             });
             pairedList[pID] = false;
         }
-        console.log("Before sorting");
-        console.log(targetsList);
-        console.log(toPairList);
+        // console.log("Before sorting");
+        // console.log(targetsList);
+        // console.log(toPairList);
         targetsList.sort(cmp2);//sorting by score
         toPairList.sort(cmp2);//sorting by score
-        console.log("After sorting");
-        console.log(targetsList);
-        console.log(toPairList);
+        // console.log("After sorting");
+        // console.log(targetsList);
+        // console.log(toPairList);
         const s = toPairList.length;
         let pairings = [];
         let nextID = nextAlternating(false, s);
@@ -132,7 +132,7 @@ export class Acj {
             //pair the paper if it is unpaired
             if(pairedList[pl.id] === false){
                 pairedList[pl.id] = true;
-                console.log(pairedList);
+                //console.log(pairedList);
                 let suggestID = nextOffsetAlternating(false, pl.targetRank, s);
                 while((suggestID !== false) && ((pairedList[targetsList[suggestID].id]) || (targetsList[suggestID].id==pl.id) || (this.papers[pl.id].countComparisons(targetsList[suggestID].id)))){
                     suggestID = nextOffsetAlternating(suggestID, pl.targetRank, s);
@@ -272,23 +272,22 @@ export function nextOffsetAlternating(after, begin, count){
 
 export async function prepareNewAcjRound(db, resource){
     const engine = new Acj();
-    console.log("created ACJ object");
     //console.log(`Resource id: ${resource.id}`);
     let subs = await database.getAcjSubmissions(db, resource.id);
     //console.log("got submissions for resource");
-    console.log("subs");
-    console.log(subs);
+    // console.log("subs");
+    // console.log(subs);
     for(let subID in subs){
         //console.log("iterating through submissions");
         let acjPaper = new Submission(subID);
         acjPaper._latestScore = subs[subID].latestScore;
         acjPaper.rank = subs[subID].rank;
-        console.log(`sub id: ${subID}`);
+        //console.log(`sub id: ${subID}`);
         //console.log("before retrieve comp matching left_id");
         let lcmps = await database.retrieveAcjComparisonMatching(db,'left_id', subID);
         //console.log("got comparisons with matching left_id");
         if(lcmps.length > 0){
-            console.log("left cmps exist");
+            //console.log("left cmps exist");
             for(let cmp in lcmps){
                 if(cmp.done > 0){
                     acjPaper.addComparison(cmp.rightId, cmp.leftWon, cmp.round);
@@ -307,10 +306,10 @@ export async function prepareNewAcjRound(db, resource){
         engine.papers[subID] = acjPaper;
     }
     if(resource.round >= 0){
-        console.log("Before recalc1 call");
+        //console.log("Before recalc1 call");
         engine.recalc1(resource.round);
-        console.log("after recalc1");
-        console.log(engine.papers);
+        // console.log("after recalc1");
+        // console.log(engine.papers);
         for(let pID in engine.papers){
             //console.log(subs[pID].latestScore)
             subs[pID].latestScore = engine.papers[pID]._latestScore;
@@ -336,9 +335,12 @@ export async function prepareNewAcjRound(db, resource){
     }
 }
 
-export function getAComparison(resource, round, uname, avoid, db){
+export async function getAComparison(resource, round, uname, avoid, db){
+    console.log("In getAComparison");
     let takeComp;
-    let dueComps = database.getUsersIncompleteComparisons(db, round, uname, resource.id);
+    let dueComps = await database.getUsersIncompleteComparisons(db, round, uname, resource.id);
+    console.log("after getUsersIncompleteComparisons. Due comps:");
+    console.log(dueComps);
     if(dueComps.length > 0){
         takeComp = dueComps[0];
         takeComp.allocated = new Date();
@@ -346,28 +348,37 @@ export function getAComparison(resource, round, uname, avoid, db){
     }
     else{
         takeComp = false;
-        dueComps = database.getUnallocatedComparisons(db, round, resource.id);
+        dueComps = await database.getUnallocatedComparisons(db, round, resource.id);
+        console.log("after getUnallocatedComparisons. Due comps:");
+        console.log(dueComps);
         if(dueComps.length == 0){
-            clearOverdueComps(resource, db);
-            dueComps = database.getUnallocatedComparisons(db, round, resource.id);
-            let n = 0;
-            while((takeComp == false) && (n < dueComps.length)){
-                if(avoid.indexOf(dueComps[n].id) == -1){
-                    takeComp = dueComps[n];
-                    takeComp.allocated = new Date();
-                    takeComp.user_id = uname;
-                    database.updateComparison(db,takeComp);
-                }
-                n++;
+            console.log("dueComps.length == 0");
+            await clearOverdueComps(resource, db);
+            console.log("after clearOverdueComps");
+            dueComps = await database.getUnallocatedComparisons(db, round, resource.id);
+            console.log("after getUnallocatedComparisons. Due comps:");
+            console.log(dueComps);
+            
+        }
+        let n = 0;
+        while((takeComp == false) && (n < dueComps.length)){
+            if(avoid.indexOf(dueComps[n].id) == -1){
+                takeComp = dueComps[n];
+                takeComp.allocated = new Date();
+                takeComp.user_id = uname;
+                database.updateComparison(db,takeComp);
             }
-
+            n++;
         }
         return takeComp;
     }
 }
 
-export function clearOverdueComps(resource, timelimit = 600, db){
-    let dueComps = database.getIncompleteComparisons(db, resource.round);
+export async function clearOverdueComps(resource, db, timelimit = 600){
+    console.log("In clearOverdueComps");
+    let dueComps = await database.getIncompleteComparisons(db, resource.round);
+    console.log("after getIncompleteComparisons. Due comps:");
+    console.log(dueComps);
     const pretime = new Date() - timelimit;
     for(let d in dueComps){
         if((d.allocated < pretime) && (d.allocated > 0)){

@@ -16,6 +16,7 @@ export function initializeDatabase(db){
             db.run(query);
             query = "CREATE TABLE IF NOT EXISTS acjComparison(id INTEGER PRIMARY KEY, user_id VARCHAR(40), activity_id INTEGER, madeBy_id INTEGER, round INTEGER, left_id INTEGER, right_id INTEGER, leftWon INTEGER, rightWon INTEGER, allocated DATETIME, done DATETIME);";
             db.run(query);
+            console.log("finished creating tables");
         });
         resolve(db);
     });
@@ -88,10 +89,10 @@ export function getAcjSubmissions(db, activity_id){
     })
 }
 
-export function getAcjUser(db, userId){
-    let query = "SELECT * FROM acjUser WHERE userId=?;";
+export function getAcjUser(db, id){
+    let query = "SELECT * FROM acjUser WHERE id=?;";
     return new Promise((resolve, reject) => {
-        db.get(query, [userId], (err, row) => {
+        db.get(query, [id], (err, row) => {
             if (err) {
                 return console.error(err.message);
             }
@@ -139,7 +140,7 @@ export function retrieveAcjComparisonMatching(db, field, val){
     return new Promise((resolve, reject) => {
         db.all(query, [val], (err, rows) => {
             if (err) return console.error(err.message);
-            console.log(`Rows retrieved: ${rows}`);
+            //console.log(`Rows retrieved: ${rows}`);
             resolve(rows);
         });
     });
@@ -174,9 +175,9 @@ export function insertComparison(db, cmp){
 } 
 
 export function getIncompleteComparisons(db, round, activity_id){
-    let query = `SELECT * FROM acjComparison WHERE activity_id=${activity_id} AND round=${round} AND leftWon=0 AND rightWon=0;`;
+    let query = `SELECT * FROM acjComparison WHERE activity_id=? AND round=? AND leftWon=0 AND rightWon=0;`;
     return new Promise((resolve, reject) => {
-        db.all(query, [], (err, cmps) => {
+        db.all(query, [activity_id, round], (err, cmps) => {
             if (err) return console.error(err.message);
             if(cmps){
                 resolve(cmps)
@@ -186,9 +187,9 @@ export function getIncompleteComparisons(db, round, activity_id){
 }
 
 export function getUsersIncompleteComparisons(db, round, uname, activity_id){
-    let query = `SELECT * FROM acjComparison WHERE activity_id=${activity_id} AND round=${round} AND leftWon=0 AND rightWon=0 AND user_id=${uname};`;
+    let query = `SELECT * FROM acjComparison WHERE activity_id=? AND round=? AND leftWon=0 AND rightWon=0 AND user_id=?;`;
     return new Promise((resolve, reject) => {
-        db.all(query, [], (err, cmps) => {
+        db.all(query, [activity_id, round, uname], (err, cmps) => {
             if (err) return console.error(err.message);
             if(cmps){
                 resolve(cmps)
@@ -198,9 +199,10 @@ export function getUsersIncompleteComparisons(db, round, uname, activity_id){
 }
 
 export function getUnallocatedComparisons(db, round, activity_id){
-    let query = `SELECT * FROM acjComparison WHERE activity_id=${activity_id} AND round=${round} AND user_id='';`;
+    //let query = `SELECT * FROM acjComparison WHERE activity_id=? AND round=? AND user_id=?;`;
+    let query = `SELECT * FROM acjComparison WHERE activity_id=? AND round=? AND user_id IS NULL;`;
     return new Promise((resolve, reject) => {
-        db.all(query, [], (err,cmps) => {
+        db.all(query, [activity_id, round], (err,cmps) => {
             if (err) return console.error(err.message);
             if(cmps){
                 resolve(cmps);
@@ -224,15 +226,13 @@ export function displayTable(db, tableName){
 
 export function displayTables(db){
     return new Promise((resolve, reject) => {
-        db.serialize(() => {
-            db.all("select name from sqlite_master where type='table'", function (err, tables) {
-                if (err) return console.error(err.message);
-                console.log("displaying tables...");
-                for(let t of tables){
-                    displayTable(db, t.name);
-                }
-                resolve(db);
-            });
+        db.all("select name from sqlite_master where type='table'", async function (err, tables) {
+            if (err) return console.error(err.message);
+            console.log("displaying tables...");
+            for(let t of tables){
+                await displayTable(db, t.name);
+            }
+            resolve(db);
         });
     });
     
@@ -241,27 +241,26 @@ export function displayTables(db){
 
 export function clearTable(db, tableName){
     let query = `DELETE FROM ${tableName}`
-    db.run(query,[], (err) => {
-        if (err) return console.error(err.message);
-    })
+    return new Promise((resolve, reject) => {
+        db.run(query,[], (err) => {
+            if (err) return console.error(err.message);
+        });
+        resolve();
+    });
 }
 
 export function clearTables(db){
     return new Promise((resolve, reject) => {
-        db.serialize(() => {
-            db.all("select name from sqlite_master where type='table'", function (err, tables) {
-                if (err) return console.error(err.message);
-                console.log("clearing tables...");
-                for(let t of tables){
-                    console.log(`clearing ${t.name}`);
-                    clearTable(db, t.name);
-                }
-                resolve(db);
-            });
-        })
-    });
-    
-    
+        db.all("select name from sqlite_master where type='table'", async function (err, tables) {
+            if (err) return console.error(err.message);
+            console.log("clearing tables...");
+            for(let t of tables){
+                console.log(`clearing ${t.name}`);
+                await clearTable(db, t.name);
+            }
+            resolve(db);
+        });
+    }); 
 }
 
 //dropTables(db);
@@ -281,9 +280,3 @@ export function clearTables(db){
 //insertComparison(db, c);
 //updateSubmission(db, x);
 
-async function testing(db){
-    await addDummyAcjSubmissions(db, 10);
-    displayTable(db, "acjSubmission");
-
-}
-//testing(db);
