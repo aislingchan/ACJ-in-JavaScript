@@ -124,11 +124,13 @@ export function getAcjResource(db, id){
 }
 
 export function retrieveAcjComparison(db, id){
-    let query = `SELECT * FROM acjComparison WHERE id=${id};`;
+    let query = `SELECT * FROM acjComparison WHERE id=?;`;
     return new Promise((resolve, reject) => {
-        db.all(query, [], (err, rows) => {
+        db.all(query, [id], (err, rows) => {
             if (err) return console.error(err.message);
             if (rows.length != 0){
+                // console.log("In retrieveAcjComparison");
+                // console.log(rows);
                 resolve(rows[0]);
             }
         });
@@ -148,29 +150,42 @@ export function retrieveAcjComparisonMatching(db, field, val){
 
 export function updateSubmission(db, sub){
     let query = `UPDATE acjSubmission SET activity_id=?, rank=?, latestScore=? WHERE id=?`;
-    db.run(query,[sub.activity_id, sub.rank, sub.latestScore, sub.id], (err) => {
-        if (err) return console.error(err.message);
+    return new Promise((resolve, reject) => {
+        db.run(query,[sub.activity_id, sub.rank, sub.latestScore, sub.id], (err) => {
+            if (err) return console.error(err.message);
+            resolve();
+        });
     });
 }
 
 export function updateResource(db, resource){
     let query = `UPDATE acjResource SET created=?, round=? WHERE id=?`;
-    db.run(query,[resource.created, resource.round, resource.id], (err) => {
-        if (err) return console.error(err.message);
-    });
+    return new Promise((resolve, reject) => {
+        db.run(query,[resource.created, resource.round, resource.id], (err) => {
+            if (err) return console.error(err.message);
+            resolve();
+        });
+    })
 }
 
 export function updateComparison(db, cmp){
-    let query = `UPDATE acjComparison SET user_id=?, activity_id=?, madeBy_id=?, round=?, left_id=?, right_id=?, leftWon=?, rightWon=?, allocated=?, done=?;`;
-    db.run(query,[cmp.user_id, cmp.activity_id, cmp.madeBy_id, cmp.round, cmp.leftId, cmp.rightId, cmp.leftWon, cmp.rightWon, cmp.allocated, cmp.done], (err) => {
-        if (err) return console.error(err.message);
+    let query = `UPDATE acjComparison SET user_id=?, activity_id=?, madeBy_id=?, round=?, left_id=?, right_id=?, leftWon=?, rightWon=?, allocated=?, done=? WHERE id=?;`;
+    return new Promise((resolve, reject) => {
+        db.run(query,[cmp.user_id, cmp.activity_id, cmp.madeBy_id, cmp.round, cmp.left_id, cmp.right_id, cmp.leftWon, cmp.rightWon, cmp.allocated, cmp.done, cmp.id], (err) => {
+            if (err) return console.error(err.message);
+            resolve();
+        })
     })
+    
 }
 
 export function insertComparison(db, cmp){
     let query = `INSERT INTO acjComparison (user_id, activity_id, madeBy_id, round, left_id, right_id, leftWon, rightWon, allocated, done) VALUES (?,?,?,?,?,?,?,?,?,?);`;
-    db.run(query, [cmp.user_id, cmp.activity_id, cmp.madeBy_id, cmp.round, cmp.leftId, cmp.rightId, cmp.leftWon, cmp.rightWon, cmp.allocated, cmp.done], (err) => {
-        if(err) return console.error(err.message);
+    return new Promise((resolve, reject) => {
+        db.run(query, [cmp.user_id, cmp.activity_id, cmp.madeBy_id, cmp.round, cmp.left_id, cmp.right_id, cmp.leftWon, cmp.rightWon, cmp.allocated, cmp.done], (err) => {
+            if(err) return console.error(err.message);
+            resolve();
+        });
     })
 } 
 
@@ -244,8 +259,8 @@ export function clearTable(db, tableName){
     return new Promise((resolve, reject) => {
         db.run(query,[], (err) => {
             if (err) return console.error(err.message);
+            resolve();
         });
-        resolve();
     });
 }
 

@@ -289,8 +289,8 @@ export async function prepareNewAcjRound(db, resource){
         if(lcmps.length > 0){
             //console.log("left cmps exist");
             for(let cmp in lcmps){
-                if(cmp.done > 0){
-                    acjPaper.addComparison(cmp.rightId, cmp.leftWon, cmp.round);
+                if(cmp.done != 0){
+                    acjPaper.addComparison(cmp.right_id, cmp.leftWon, cmp.round);
                 }
             }
         }
@@ -298,8 +298,8 @@ export async function prepareNewAcjRound(db, resource){
         //console.log("got comparisons with matching right_id");
         if(rcmps){
             for(let cmp in rcmps){
-                if(cmp.done > 0){
-                    acjPaper.addComparison(cmp.leftId, cmp.rightWon, cmp.round);
+                if(cmp.done != 0){
+                    acjPaper.addComparison(cmp.left_id, cmp.rightWon, cmp.round);
                 }
             }
         }
@@ -314,24 +314,24 @@ export async function prepareNewAcjRound(db, resource){
             //console.log(subs[pID].latestScore)
             subs[pID].latestScore = engine.papers[pID]._latestScore;
             subs[pID].rank = engine.papers[pID].rank;
-            database.updateSubmission(db, subs[pID]);
+            await database.updateSubmission(db, subs[pID]);
         }
     }
     const pairings = engine.getPairingsByRank();
-    console.log("PAIRINGS");
-    console.log(pairings);
+    // console.log("PAIRINGS");
+    // console.log(pairings);
     resource.round += 1;
     console.log(`Resource round: ${resource.round}`);
-    database.updateResource(db,resource);
+    await database.updateResource(db,resource);
     for(let p of pairings){
         let cmpr = new acjComparison();
         cmpr.activity_id = resource.id;
-        cmpr.leftId = p[0];
-        cmpr.rightId = p[1];
+        cmpr.left_id = p[0];
+        cmpr.right_id = p[1];
         cmpr.allocated = 0;
         cmpr.done = 0;
         cmpr.round = resource.round;
-        database.insertComparison(db, cmpr);
+        await database.insertComparison(db, cmpr);
     }
 }
 
@@ -339,39 +339,40 @@ export async function getAComparison(resource, round, uname, avoid, db){
     console.log("In getAComparison");
     let takeComp;
     let dueComps = await database.getUsersIncompleteComparisons(db, round, uname, resource.id);
-    console.log("after getUsersIncompleteComparisons. Due comps:");
-    console.log(dueComps);
+    // console.log("after getUsersIncompleteComparisons. Due comps:");
+    // console.log(dueComps);
     if(dueComps.length > 0){
         takeComp = dueComps[0];
-        takeComp.allocated = new Date();
-        database.updateComparison(db, takeComp);
+        takeComp.allocated = new Date().toISOString();
+        await database.updateComparison(db, takeComp);
     }
     else{
         takeComp = false;
         dueComps = await database.getUnallocatedComparisons(db, round, resource.id);
-        console.log("after getUnallocatedComparisons. Due comps:");
-        console.log(dueComps);
+        // console.log("after getUnallocatedComparisons. Due comps:");
+        // console.log(dueComps);
         if(dueComps.length == 0){
             console.log("dueComps.length == 0");
             await clearOverdueComps(resource, db);
             console.log("after clearOverdueComps");
             dueComps = await database.getUnallocatedComparisons(db, round, resource.id);
-            console.log("after getUnallocatedComparisons. Due comps:");
-            console.log(dueComps);
+            // console.log("after getUnallocatedComparisons. Due comps:");
+            // console.log(dueComps);
             
         }
         let n = 0;
         while((takeComp == false) && (n < dueComps.length)){
             if(avoid.indexOf(dueComps[n].id) == -1){
+                console.log("found an available comparison that is not on the avoid list");
                 takeComp = dueComps[n];
-                takeComp.allocated = new Date();
+                takeComp.allocated = new Date().toISOString();
                 takeComp.user_id = uname;
-                database.updateComparison(db,takeComp);
+                await database.updateComparison(db,takeComp);
             }
             n++;
         }
-        return takeComp;
     }
+    return takeComp;
 }
 
 export async function clearOverdueComps(resource, db, timelimit = 600){
@@ -381,29 +382,38 @@ export async function clearOverdueComps(resource, db, timelimit = 600){
     console.log(dueComps);
     const pretime = new Date() - timelimit;
     for(let d in dueComps){
-        if((d.allocated < pretime) && (d.allocated > 0)){
+        let cmpDate = new Date(d.allocated);
+        if((cmpDate < pretime) && (cmpDate > 0)){
             d.allocated = 0;
             d.user_id = '';
-            database.updateComparison(db, d);
+            await database.updateComparison(db, d);
         }
     }
 }
 
 // get marker's decision and updates comparison in database
 //  (basic version, must chose either left or right)
-export function checkInput(activity, userInfo, cmpId, leftWon, db){
-    let cmp = database.retrieveAcjComparison(db, cmpId);
+export async function checkInput(userId, cmpId, leftWon, db){
+    let cmp = await database.retrieveAcjComparison(db, cmpId);
+    // console.log("In checkInput. cmp:");
+    // console.log(cmp);
     if(leftWon){
         cmp.leftWon = true;
-        cmp.done = new Date();
-        cmp.madeBy_id = userInfo.user.id;
+        cmp.done = new Date().toISOString();
+        cmp.madeBy_id = userId;
     }
     else{
         cmp.rightWon = true;
-        cmp.done = new Date();
-        cmp.madeBy_id = userInfo.user.id;
+        cmp.done = new Date().toISOString();
+        cmp.madeBy_id = userId;
     }
-    database.updateComparison(db, cmp);
+    // console.log("Updated cmp object:")
+    // console.log(cmp);
+    // console.log("before db update");
+    // await database.displayTable(db, "acjComparison");
+    await database.updateComparison(db, cmp);
+    // console.log("after db update");
+    // await database.displayTable(db, "acjComparison");
 }
 
 export class acjComparison{
@@ -413,13 +423,11 @@ export class acjComparison{
         this.activity_id = null;
         this.madeBy_id = null;
         this.round = 0;
-        this.leftId = null;
-        this.rightId = null;
+        this.left_id = null;
+        this.right_id = null;
         this.leftWon = false;
         this.rightWon = false;
-        this.allocated = new Date();
-        this.done = new Date();
+        this.allocated = new Date().toISOString();
+        this.done = new Date().toISOString();
     }
 }
-
-// function for choosing the "better" paper from a pair based on an anwser key
