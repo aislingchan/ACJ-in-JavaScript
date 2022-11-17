@@ -1,4 +1,5 @@
 import * as database from './database.js';
+import { rankingLogger } from './rankingLogger.js';
 
 // const sqlite3 = require('sqlite3').verbose();
 // const db = new sqlite3.Database("./acj.db", sqlite3.OPEN_READWRITE, (err) => {
@@ -18,11 +19,13 @@ export class Acj {
         for(let pID in this.papers){
             let sc = 0;
             let cmprank;
+            // console.log("Papers");
+            // console.log(this.papers);
             if(this.papers[pID].comparisons.length){
-                for(let cmp in this.papers[pID].comparisons){
+                for(let cmp of this.papers[pID].comparisons){
                     if(round <= 4){
-                        cmprank = this.papers[cmp[withID]].rank;
-                        if(cmp[won]){
+                        cmprank = this.papers[cmp.withID].rank;
+                        if(cmp.won){
                             sc += 1;
                         }
                         else{
@@ -30,20 +33,20 @@ export class Acj {
                         }
                     }
                     else if(round <= 8){
-                        cmprank = this.papers[cmp[withID]].rank;
-                        if(cmp[won]){
+                        cmprank = this.papers[cmp.withID].rank;
+                        if(cmp.won){
                             sc += cmprank;
                         }
                         else{
-                            sc -= (this.papers.length - cmprank);
+                            sc -= (Object.keys(this.papers).length - cmprank);
                         }
                     }
                     else{
-                        cmprank = this.papers[cmp[withID]].rank;
-                        let thisrank = pp.rank;
+                        cmprank = this.papers[cmp.withID].rank;
+                        let thisrank = this.papers[pID].rank;
                         let rmsRankDiff = Math.sqrt((cmprank-thisrank)*(cmprank-thisrank));
-                        if(cmp[won]){
-                            sc += thisrank + thisrank/rmnRankDiff;
+                        if(cmp.won){
+                            sc += thisrank + thisrank/rmsRankDiff;
                         }
                         else{
                             sc += thisrank - thisrank/rmsRankDiff;
@@ -72,9 +75,12 @@ export class Acj {
         //console.log("ranklist");
         //console.log(rankList);
         rankList.sort(cmp2);
+        // console.log("RANKLIST");
+        // console.log(rankList);
         for(let n = 0; n < rankList.length; n++){
             this.papers[rankList[n].id].rank = n;
         }
+        //console.log(this.papers);
     }
 
     getPairingsByRank(){
@@ -93,9 +99,9 @@ export class Acj {
                 let n = 0;
                 let rank = this.papers[pID].rank;
                 let scci = 0;
-                for(let c in this.papers[pID].comparisons){
+                for(let c of this.papers[pID].comparisons){
                     n++;
-                    let compRank = this.papers[c[withID]].rank;
+                    let compRank = this.papers[c.withID].rank;
                     scci += ((rank - compRank) / (1 + Math.sqrt((rank-compRank)*(rank-compRank))));
                 }
                 cws = rank + scci;
@@ -208,6 +214,14 @@ export function cmp2(a, b){
     return (a.score < b.score) ? -1 : 1;
 }
 
+//Compares two submissions based on rank
+function cmp3(a,b){
+    if(a.rank == b.rank){
+        return 0
+    }
+    return (a.rank < b.rank) ? -1 : 1;
+}
+
 //param after: index of a list or false
 //param count: size of a list
 //returns an index of the list or false
@@ -288,7 +302,7 @@ export async function prepareNewAcjRound(db, resource){
         //console.log("got comparisons with matching left_id");
         if(lcmps.length > 0){
             //console.log("left cmps exist");
-            for(let cmp in lcmps){
+            for(let cmp of lcmps){
                 if(cmp.done != 0){
                     acjPaper.addComparison(cmp.right_id, cmp.leftWon, cmp.round);
                 }
@@ -297,7 +311,7 @@ export async function prepareNewAcjRound(db, resource){
         let rcmps = await database.retrieveAcjComparisonMatching(db, 'right_id', subID);
         //console.log("got comparisons with matching right_id");
         if(rcmps){
-            for(let cmp in rcmps){
+            for(let cmp of rcmps){
                 if(cmp.done != 0){
                     acjPaper.addComparison(cmp.left_id, cmp.rightWon, cmp.round);
                 }
@@ -306,12 +320,8 @@ export async function prepareNewAcjRound(db, resource){
         engine.papers[subID] = acjPaper;
     }
     if(resource.round >= 0){
-        //console.log("Before recalc1 call");
         engine.recalc1(resource.round);
-        // console.log("after recalc1");
-        // console.log(engine.papers);
         for(let pID in engine.papers){
-            //console.log(subs[pID].latestScore)
             subs[pID].latestScore = engine.papers[pID]._latestScore;
             subs[pID].rank = engine.papers[pID].rank;
             await database.updateSubmission(db, subs[pID]);
@@ -323,6 +333,7 @@ export async function prepareNewAcjRound(db, resource){
     resource.round += 1;
     console.log(`Resource round: ${resource.round}`);
     await database.updateResource(db,resource);
+    await logSubmissionData(db, resource);
     for(let p of pairings){
         let cmpr = new acjComparison();
         cmpr.activity_id = resource.id;
@@ -430,4 +441,20 @@ export class acjComparison{
         this.allocated = new Date().toISOString();
         this.done = new Date().toISOString();
     }
+}
+
+
+async function logSubmissionData(db, resource){
+    //retrieve submissions
+    const subs = await database.getAcjSubmissions(db, resource.id);
+    let subList = Object.values(subs);
+    //get submission ids in order of rank
+    subList.sort(cmp3)
+    const subIds = subList.map(x => x.id);
+    //log data
+    rankingLogger.log({
+        level: "info",
+        round: resource.round - 1,
+        ranks: subIds
+    });
 }

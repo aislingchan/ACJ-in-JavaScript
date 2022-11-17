@@ -2,6 +2,7 @@
 import * as acj from "./acj.js";
 import * as acjDb from "./database.js";
 import sqlite3 from 'sqlite3';
+import { rankingLogger } from "./rankingLogger.js";
 
 //set up database and populate database with dummy data
 //const sqlite3 = require('sqlite3').verbose();
@@ -14,7 +15,7 @@ async function setUpDatabase(db){
     await acjDb.clearTables(db);
     await acjDb.displayTables(db);
     await acjDb.addDummyAcjResources(db,3);
-    await acjDb.addDummyAcjSubmissions(db, 6);
+    await acjDb.addDummyAcjSubmissions(db, 10);
     await acjDb.addDummyUsers(db, 3);
     await acjDb.displayTables(db);
 }
@@ -26,32 +27,37 @@ async function setUpDatabase(db){
 // })
 
 
-async function runRound(db){
-    //begin round of ACJ
-    console.log("in runRound");
+async function runRounds(db, roundNum){
+    console.log("in runRounds");
+    // setting up
     const usr = await acjDb.getAcjUser(db, 1);
     let avoid = [];
     const res = await acjDb.getAcjResource(db, 1);
+
     await acj.prepareNewAcjRound(db, res);
 
-    await acjDb.displayTables(db);
-    console.log("Begin Judging");
+    for(let i=0; i<roundNum; i++){
+        //await acjDb.displayTables(db);
+        console.log("Begin Judging");
 
-    //Judge each pairing
-    let dueComps = await acjDb.getIncompleteComparisons(db, res.round, res.id);
-    console.log("get incomplete comparisons");
-    console.log(dueComps);
-    while(dueComps.length > 0){
-        console.log("In judging loop")
-        let currentCmp = await acj.getAComparison(res, res.round, usr.userId, avoid, db);
-        // console.log("Got a comparison object:");
-        // console.log(currentCmp);
-        // console.log("displaying updated comparison table");
-        // await acjDb.displayTable(db, "acjComparison");
-        await makeDecision(db, currentCmp, usr.userId);
-        dueComps = await acjDb.getIncompleteComparisons(db, res.round, res.id);
-        //console.log(dueComps);
-        //acjDb.displayTable(db, "acjComparison");
+        //Judge each pairing
+        let dueComps = await acjDb.getIncompleteComparisons(db, res.round, res.id);
+        // console.log("get incomplete comparisons");
+        // console.log(dueComps);
+        while(dueComps.length > 0){
+            console.log("In judging loop")
+            let currentCmp = await acj.getAComparison(res, res.round, usr.userId, avoid, db);
+            // console.log("Got a comparison object:");
+            // console.log(currentCmp);
+            // console.log("displaying updated comparison table");
+            // await acjDb.displayTable(db, "acjComparison");
+            await makeDecision(db, currentCmp, usr.userId);
+            dueComps = await acjDb.getIncompleteComparisons(db, res.round, res.id);
+            //console.log(dueComps);
+            //acjDb.displayTable(db, "acjComparison");
+        }
+        // recalculate ranks. Creates new pairings even though they may not be used
+        await acj.prepareNewAcjRound(db, res);
     }
 }
 
@@ -60,7 +66,7 @@ async function makeDecision(db, cmp, userId){
     const l_ranking = perfectRanking[cmp.left_id.toString()];
     const r_ranking = perfectRanking[cmp.right_id.toString()];
     console.log(`Left ranking (id: ${cmp.left_id}): ${l_ranking}. Right ranking (id: ${cmp.right_id}): ${r_ranking}`);
-    if(l_ranking < r_ranking){
+    if(l_ranking > r_ranking){
         console.log("left win");
         await acj.checkInput(userId, cmp.id, true, db);
     }
@@ -70,7 +76,7 @@ async function makeDecision(db, cmp, userId){
     }
 }
 
-//key: submission id, value: true ranking
+//key: submission id, value: true ranking, worst to best: 9,3,2,7,6,4,1,10,5,8 | 3,2,6,4,1,5 
 const perfectRanking = {
     '1': 7,
     '2': 3,
@@ -90,7 +96,7 @@ const perfectRanking = {
 
 async function runACJ(db){
     await setUpDatabase(db);
-    await runRound(db);
+    await runRounds(db, 25);
     await acjDb.displayTables(db);
 }
 
