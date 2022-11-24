@@ -3,12 +3,13 @@ import * as acj from "./acj.js";
 import * as acjDb from "./database.js";
 import sqlite3 from 'sqlite3';
 import { rankingLogger } from "./rankingLogger.js";
+import fs from 'fs';
 
 //set up database and populate database with dummy data
 //const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database("./acj.db", sqlite3.OPEN_READWRITE, (err) => {
-    if (err) return console.error(err.message);
-})
+// const db = new sqlite3.Database("./acj.db", sqlite3.OPEN_READWRITE, (err) => {
+//     if (err) return console.error(err.message);
+// })
 
 async function setUpDatabase(db){
     await acjDb.initializeDatabase(db);
@@ -63,8 +64,8 @@ async function runRounds(db, roundNum){
 
 //Make decision on each pair based on some answer key
 async function makeDecision(db, cmp, userId){
-    const l_ranking = perfectRanking[cmp.left_id.toString()];
-    const r_ranking = perfectRanking[cmp.right_id.toString()];
+    const l_ranking = acj.perfectRanking[cmp.left_id.toString()];
+    const r_ranking = acj.perfectRanking[cmp.right_id.toString()];
     console.log(`Left ranking (id: ${cmp.left_id}): ${l_ranking}. Right ranking (id: ${cmp.right_id}): ${r_ranking}`);
     if(l_ranking > r_ranking){
         console.log("left win");
@@ -76,28 +77,34 @@ async function makeDecision(db, cmp, userId){
     }
 }
 
-//key: submission id, value: true ranking, worst to best: 9,3,2,7,6,4,1,10,5,8 | 3,2,6,4,1,5 
-const perfectRanking = {
-    '1': 7,
-    '2': 3,
-    '3': 2,
-    '4': 6,
-    '5': 9,
-    '6': 5,
-    '7': 4,
-    '8': 10,
-    '9': 1,
-    '10': 8
-}
+// //key: submission id, value: true ranking, worst to best: 9,3,2,7,6,4,1,10,5,8 | 3,2,6,4,1,5 
+// const perfectRanking = {
+//     '1': 7,
+//     '2': 3,
+//     '3': 2,
+//     '4': 6,
+//     '5': 9,
+//     '6': 5,
+//     '7': 4,
+//     '8': 10,
+//     '9': 1,
+//     '10': 8
+// }
 
 //log info on the submissions and comparisons for this round
 //begin another round and repeat until x number of rounds completed
 //return ranking of all submissions
 
-async function runACJ(db){
+export async function runACJ(){
+    const db = new sqlite3.Database("./acj.db", sqlite3.OPEN_READWRITE, (err) => {
+        if (err) return console.error(err.message);
+    })
     await setUpDatabase(db);
-    await runRounds(db, 25);
+    await runRounds(db, 8);
     await acjDb.displayTables(db);
+    const results = fs.readFileSync('results.txt');
+    return results;
+
 }
 
-runACJ(db);
+//runACJ();

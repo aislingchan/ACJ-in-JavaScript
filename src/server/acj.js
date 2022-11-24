@@ -1,5 +1,6 @@
 import * as database from './database.js';
 import { rankingLogger } from './rankingLogger.js';
+import {resultsLogger} from './resultsLogger.js';
 
 // const sqlite3 = require('sqlite3').verbose();
 // const db = new sqlite3.Database("./acj.db", sqlite3.OPEN_READWRITE, (err) => {
@@ -451,10 +452,29 @@ async function logSubmissionData(db, resource){
     //get submission ids in order of rank
     subList.sort(cmp3)
     const subIds = subList.map(x => x.id);
+    const subResults = subIds.map(id => JSON.stringify({id: id, brightness: (((perfectRanking[id] / Object.keys(perfectRanking).length)*0.5) + 0.5)})).join("/")
     //log data
     rankingLogger.log({
         level: "info",
         round: resource.round - 1,
         ranks: subIds
     });
+    resultsLogger.log({
+        level: "info",
+        results: subResults
+    });
+}
+
+//key: submission id, value: true ranking, worst to best: 9,3,2,7,6,4,1,10,5,8 | 3,2,6,4,1,5 
+export const perfectRanking = {
+    '1': 7,
+    '2': 3,
+    '3': 2,
+    '4': 6,
+    '5': 9,
+    '6': 5,
+    '7': 4,
+    '8': 10,
+    '9': 1,
+    '10': 8
 }
