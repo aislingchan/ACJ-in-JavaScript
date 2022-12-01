@@ -1,23 +1,29 @@
-import React, {useEffect} from 'react'
-import axios from 'axios';
-
-const api = axios.create({
-    baseURL: `http://localhost:3000/results`
-  });
+import React, {useState} from 'react'
 
 function ResultsTableElem(props){
+    function handleMouseOver(){
+        props.handleHover(props.subId, props.cmpId);
+    }
+
+    function handleMouseOut(){
+        props.handleHover(0,0);
+    }
     return(
-        <td style={{filter: `brightness(${props.brightness})`}}>
+        <td onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} style={{filter: `brightness(${props.brightness})`}} className={props.selected ? "selectedSub": ""}>
             {props.subId}. brightness rating: {props.brightness}
         </td>
     );
 }
 
 function ResultsTableRow(props){
+    const [selected, setSelected] = useState([0,0]);
+    const changeSelected = (subId, cmpId) => {
+        setSelected([subId, cmpId]);
+    }
     const resultsData = props.results;
     let resultElems = [];
     for(let i=0; i<resultsData.length ; i++){
-        resultElems.push(<ResultsTableElem key={resultsData[i].id} subId={resultsData[i].id} brightness={resultsData[i].brightness}/>)
+        resultElems.push(<ResultsTableElem key={resultsData[i].id} subId={resultsData[i].id} cmpId={resultsData[i].cmpId} brightness={resultsData[i].brightness} handleHover={changeSelected} selected={selected.includes(resultsData[i].id) ?  true: false}/>);
     }
     
     return(

@@ -452,7 +452,21 @@ async function logSubmissionData(db, resource){
     //get submission ids in order of rank
     subList.sort(cmp3)
     const subIds = subList.map(x => x.id);
-    const subResults = subIds.map(id => JSON.stringify({id: id, brightness: (((perfectRanking[id] / Object.keys(perfectRanking).length)*0.5) + 0.5)})).join("/")
+    //retrieve comparisons
+    const comps = await database.retrieveAcjComparisonMatching(db, "round", resource.round - 1);
+    let subResults = []
+    for(let c of comps){
+        subResults.push({id: c.left_id, cmpId: c.right_id, brightness: (((perfectRanking[c.left_id] / Object.keys(perfectRanking).length)*0.5) + 0.5)});
+        subResults.push({id: c.right_id, cmpId: c.left_id, brightness: (((perfectRanking[c.right_id] / Object.keys(perfectRanking).length)*0.5) + 0.5)});
+    }
+    subResults.sort((a,b) => {
+        const x = subIds.indexOf(a.id);
+        const y = subIds.indexOf(b.id);
+        return x < y ? -1 : 1;
+    });
+    const subResultsStr = subResults.map(x => JSON.stringify(x)).join("/");
+    //const subResults = subIds.map(id => JSON.stringify({id: id, brightness: (((perfectRanking[id] / Object.keys(perfectRanking).length)*0.5) + 0.5)})).join("/");
+
     //log data
     rankingLogger.log({
         level: "info",
@@ -461,7 +475,7 @@ async function logSubmissionData(db, resource){
     });
     resultsLogger.log({
         level: "info",
-        results: subResults
+        results: subResultsStr
     });
 }
 

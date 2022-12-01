@@ -2,3 +2,7 @@ table, td {
     border: 1px solid black;
     background-color: white;
 }
+
+.selectedSub {
+    background-color: yellow;
+}
