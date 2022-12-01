@@ -52,7 +52,7 @@ async function runRounds(db, roundNum){
             // console.log(currentCmp);
             // console.log("displaying updated comparison table");
             // await acjDb.displayTable(db, "acjComparison");
-            await makeDecision(db, currentCmp, usr.userId);
+            await makeDecision(db, currentCmp, usr.userId, 0.05);
             dueComps = await acjDb.getIncompleteComparisons(db, res.round, res.id);
             //console.log(dueComps);
             //acjDb.displayTable(db, "acjComparison");
@@ -63,11 +63,14 @@ async function runRounds(db, roundNum){
 }
 
 //Make decision on each pair based on some answer key
-async function makeDecision(db, cmp, userId){
+async function makeDecision(db, cmp, userId, percentError){
     const l_ranking = acj.perfectRanking[cmp.left_id.toString()];
     const r_ranking = acj.perfectRanking[cmp.right_id.toString()];
     console.log(`Left ranking (id: ${cmp.left_id}): ${l_ranking}. Right ranking (id: ${cmp.right_id}): ${r_ranking}`);
-    if(l_ranking > r_ranking){
+    const perfectDecision = l_ranking > r_ranking;
+    const imperfectDecision = Math.random() < (1-percentError) ? perfectDecision : !perfectDecision;
+    console.log(`perfect: ${perfectDecision}. imperfect: ${imperfectDecision}`);
+    if(imperfectDecision){
         console.log("left win");
         await acj.checkInput(userId, cmp.id, true, db);
     }
