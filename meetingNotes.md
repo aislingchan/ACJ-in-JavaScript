@@ -67,3 +67,68 @@
 * Add a function which chooses the "better" paper from a pair based on some answer key
 * Run simulations of my project
 * Run Niall's project on my own machine and compare it's results to mine
+
+## Week 7 (3 Nov 2022)
+
+* We discussed the issues I was having with the SQLite module for NodeJS. The issues were mainly due to asynchronous functions not being called correctly. Jeremy directed me towards some resources on asynchronous programming.
+* Jeremy also suggested I push my current code to a dev branch for him to have a look at
+
+### Plan for next week:
+* Look at resources for asynchronous programming
+* Continue to work on fixing the database
+
+## Week 8 (10 Nov 2022)
+* Meeting cancelled
+
+## Week 9 (17 Nov 2022)
+
+* I showed Jeremy my project simulating several rounds of ACJ and logging the rankings after each round.
+* Jeremy suggested I create a table to display the results of each round of ACJ.
+* We talked about how the decisions are made in the simulations and Jeremy suggested I add imperfect decision making in order to get more realistic results.
+* Jeremy also suggested to think about what the front end will be like
+
+### Plan for next week:
+* Create table display of results of ACJ rounds
+* Add imperfect decision making
+* Think about front end
+
+## Week 10 (24 Nov 2022)
+
+* Niall Barr was also included in this meeting.
+* We looked at the table view of the submission rankings I made the previous week as well as all of the code I have written up to this point.
+* We discussed what needs to be implemented next. This included a login page, submission page, admin page, and judging page.
+* We decided that OpenID Client should be used to authenticate users.
+
+### Plan for next week:
+* Add mouse-over highlighting function to the table view of the rankings
+* Add imperfect judging to the ACJ simulations
+* Research OpenID Client
+
+## Week 11 (1 Dec 2022)
+
+* I demonstrated the highlighting functionality I added to the table view of rankings.
+* I added imperfect judging to the system so we looked at the effect it had on the rankings table.
+* We talked about the other web pages that need to be implemented and outlined the key functionality they need to provide.
+
+### Plan for next week:
+* Keep working on implementing OpenID Client
+* Get started on making the rest of the pages (judging page, submission page, set up page, status page)
+
+## Week 13 (14 Dec 2022)
+* Meeting cancelled
+
+## Week 14 (12 Jan 2023)
+
+* I had trouble getting OpenID Client to work so we worked on debugging it together.
+
+### Plan for next week:
+* Get OpenID Client working
+
+## Week 15 (19 Jan 2023)
+
+* I demonstrated the log in system working.
+* Jeremy suggested I work on the web app for the next two weeks and then move onto the evaluation stage. We talked about the different ways to evaluate the project - compare features with Niall Barr's project, perform a user study, performance evaluation on different numbers of assessments.
+* No meeting next week.
+
+### Plan for next two weeks:
+* Finish creating all of the pages (judging page, submission page, set up page, status page)

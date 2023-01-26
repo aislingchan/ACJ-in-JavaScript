@@ -92,3 +92,79 @@
 ### 3 November 2022
 
 * *0.5 hours* Meeting with Jeremy
+
+## Week 8
+
+### 9 November 2022
+
+* *6 hours* Writing driver for running my code
+
+## Week 9
+
+### 16 November 2022
+
+* *3 hours* Writing driver for running my code
+* *2 hours* Adding functionality for logging rankings
+
+### 17 November 2022
+
+* *0.5 hours* Meeting with Jeremy
+
+## Week 10
+
+### 23 November 2022
+
+* *2 hours* Setting up rankings logger for table format
+* *2 hours* Creating components for the rankings table
+* *1 hour* Set up ExpressJS server and API for running ACJ
+
+### 24 November 2022
+
+* *0.5 hours* Meeting with Jeremy
+
+## Week 11
+
+### 30 November 2022
+
+* *1 hour* Adding imperfect judging
+* *3 hours* Add highlighting of pairs of IDs in results table
+* *2 hours* Researching OAuth 2
+* *1 hour* Creating Log In Page
+* *1 hour * Implementing OpenID Connect
+
+
+### 1 December 2022
+
+* *0.5 hours* Meeting with Jeremy
+
+## Week 13
+
+### 15 December 2022
+
+* *3 hours* Writing status report
+
+## Week 14
+
+### 9 January 2023s
+
+* *4 hours* Debugging OpenID Connect
+
+### 12 January 2023
+
+* *0.5 hours* Meeting with Jeremy
+
+## Week 15
+
+### 18 January 2023
+
+* *3 hours* Debugging OpenID Connect
+* *3 hours* Setting up basic design of judging, set-up, status, and submission pages
+* *2 hours* Setting up form on activity set-up page 
+
+### 19 January 2023
+
+* *0.5 hours* Meeting with Jeremy
+
+## Week 16
+
+## 25 January 2023
