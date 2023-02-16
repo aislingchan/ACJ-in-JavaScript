@@ -1,40 +1,29 @@
 //import acj and database functions
-import * as acj from "./acj.js";
-import * as acjDb from "./database.js";
-import sqlite3 from 'sqlite3';
-import { rankingLogger } from "./rankingLogger.js";
-import fs from 'fs';
+// import * as acj from "./acj.js";
+// import * as acjDb from "./database.js";
+// import sqlite3 from 'sqlite3';
+// import { rankingLogger } from "./rankingLogger.js";
 
-//set up database and populate database with dummy data
-//const sqlite3 = require('sqlite3').verbose();
-// const db = new sqlite3.Database("./acj.db", sqlite3.OPEN_READWRITE, (err) => {
-//     if (err) return console.error(err.message);
-// })
+const acj = require('./acj');
+const acjDb = require('./database');
+const sqlite3 = require('sqlite3');
+const fs = require('fs');
 
 async function setUpDatabase(db){
     await acjDb.initializeDatabase(db);
     await acjDb.clearTables(db);
-    await acjDb.displayTables(db);
+    //await acjDb.displayTables(db);
     await acjDb.addDummyAcjResources(db,3);
     await acjDb.addDummyAcjSubmissions(db, 10);
     await acjDb.addDummyUsers(db, 3);
-    await acjDb.displayTables(db);
+    //await acjDb.displayTables(db);
 }
 
-//setUpDatabase(db);
-
-// db.close((err) => {
-//     if (err) return console.error(err.message);
-// })
-
-
 async function runRounds(db, roundNum){
-    console.log("in runRounds");
     // setting up
     const usr = await acjDb.getAcjUser(db, 1);
     let avoid = [];
     const res = await acjDb.getAcjResource(db, 1);
-
     await acj.prepareNewAcjRound(db, res);
 
     for(let i=0; i<roundNum; i++){
@@ -43,16 +32,16 @@ async function runRounds(db, roundNum){
 
         //Judge each pairing
         let dueComps = await acjDb.getIncompleteComparisons(db, res.round, res.id);
-        // console.log("get incomplete comparisons");
-        // console.log(dueComps);
+        console.log("get incomplete comparisons");
+        console.log(dueComps);
         while(dueComps.length > 0){
             console.log("In judging loop")
-            let currentCmp = await acj.getAComparison(res, res.round, usr.userId, avoid, db);
+            let currentCmp = await acj.getAComparison(res, res.round, usr.id, avoid, db);
             // console.log("Got a comparison object:");
             // console.log(currentCmp);
             // console.log("displaying updated comparison table");
             // await acjDb.displayTable(db, "acjComparison");
-            await makeDecision(db, currentCmp, usr.userId, 0.05);
+            await makeDecision(db, currentCmp, usr.id, 0.05);
             dueComps = await acjDb.getIncompleteComparisons(db, res.round, res.id);
             //console.log(dueComps);
             //acjDb.displayTable(db, "acjComparison");
@@ -75,7 +64,7 @@ async function makeDecision(db, cmp, userId, percentError){
         await acj.checkInput(userId, cmp.id, true, db);
     }
     else{
-        console.log("right win");
+       console.log("right win");
         await acj.checkInput(userId, cmp.id, false, db);
     }
 }
@@ -98,16 +87,18 @@ async function makeDecision(db, cmp, userId, percentError){
 //begin another round and repeat until x number of rounds completed
 //return ranking of all submissions
 
-export async function runACJ(){
-    const db = new sqlite3.Database("./acj.db", sqlite3.OPEN_READWRITE, (err) => {
-        if (err) return console.error(err.message);
-    })
+async function runACJ(){
+    const db = acjDb.openDbConn();
     await setUpDatabase(db);
     await runRounds(db, 8);
     await acjDb.displayTables(db);
-    const results = fs.readFileSync('results.txt');
-    return results;
-
+    acjDb.closeDbConn(db);
+    //const results = fs.readFileSync('results.txt');
+    //return results;
 }
 
 //runACJ();
+
+module.exports = {
+    runACJ
+}

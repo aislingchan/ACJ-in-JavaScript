@@ -1,19 +1,23 @@
-import { createLogger, format, transports } from "winston";
+// import { createLogger, format, transports } from "winston";
 
-const { combine, timestamp, printf } = format;
+const winston = require('winston');
+const { combine, timestamp, printf } = winston.format;
 
 const rankFormat = printf(({round, ranks, timestamp}) => {
     return `[${timestamp}] Rounds completed: ${round}. Ranking: ${ranks}`;
 });
 
-export const rankingLogger = createLogger({
+const rankingLogger = winston.createLogger({
     level: "info",
     format: combine(
         timestamp({format: "HH:mm:ss"}),
         rankFormat
     ),
     transports: [
-        new transports.File({filename: 'ranking.log'})
+        new winston.transports.File({filename: 'ranking.log'})
     ]
 });
 
+module.exports = {
+    rankingLogger
+}

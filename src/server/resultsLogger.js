@@ -1,16 +1,20 @@
-import { createLogger, format, transports } from "winston";
+// import { createLogger, format, transports } from "winston";
 
-const {printf} = format;
+const winston = require('winston');
+const {printf} = winston.format;
 
 const rankFormat = printf(({results}) => {
     return `${results}`;
 });
 
-export const resultsLogger = createLogger({
+const resultsLogger = winston.createLogger({
     level: "info",
     format: rankFormat,
     transports: [
-        new transports.File({filename: 'results.txt'})
+        new winston.transports.File({filename: 'results.txt'})
     ]
 });
 
+module.exports = {
+    resultsLogger
+}
