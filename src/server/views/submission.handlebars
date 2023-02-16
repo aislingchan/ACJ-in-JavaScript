@@ -1,0 +1,24 @@
+<h2 class="d-flex justify-content-center m-3">Submission Page</h2>
+<div class="m-3">
+    {{#if this.title}}
+        <h3>{{this.title}}</h3>
+        <p>Submission Instructions: {{this.submissionInstrs}}</p>
+        {{#if this.isSubmitted}}
+        <p>You have already made a submission</p>
+        <div class="border border-dark w-50 p-3 m-3  overflow-auto">
+            <pre><code>{{this.code}}</code></pre>
+        </div>
+        <form method="POST" action="/submission/delete/{{this.id}}">
+           <button type="submit" class="btn btn-dark my-2">Delete Submission</button> 
+        </form>
+        {{else}}
+        <form method="POST" action="/submission/{{this.id}}" enctype="multipart/form-data">
+            <input class="form-control" type="file" name="filedata">
+            <button type="submit" class="btn btn-dark my-2">Submit</button>
+        </form>
+        
+        {{/if}}
+    {{else}}
+    <p>Error</p>
+    {{/if}}
+</div>

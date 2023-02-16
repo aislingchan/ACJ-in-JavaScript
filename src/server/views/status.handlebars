@@ -1,0 +1,56 @@
+<h2 class="d-flex justify-content-center m-3">Status page</h2>
+{{#each activity}}
+    <div class="mx-4 mb-4">
+        <h3 class="">{{this.title}}</h3>
+        <p><b>Submission deadline: </b>{{this.deadline}}</p>
+        {{#if this.isAssessor}}
+            <h5><u>Marking Information:</u></h5>
+            <div class="mx-3">
+            {{#if this.beforeDeadline}}        
+                <p>Judging has not begun.</p> 
+            {{else}}        
+                <p>You have made {{this.numJudgementsMade}} judgements.</p>
+                {{#if this.stillJudging}}
+                    <p>Judging is ongoing.</p>
+                    <a href="/judging/{{this.activityId}}">Begin Judging</a>
+                {{else}}
+                    <p>Judging has ended.</p>
+                    <a href="/judging/{{this.activityId}}">View Rankings</a>
+                {{/if}} 
+            {{/if}}
+            </div>
+        {{/if}}
+        {{#if this.isSubmitter}}
+            <h5><u>Submission Information: </u></h5>
+            <div class="mx-3">
+                {{#if this.isSubmitted}}
+                    <p>You have made a submission.</p>
+                    {{#if this.ranking}}
+                        <div><b>Grading completed</b></div>
+                        <div><b>Ranking: </b>{{this.ranking}}</div>
+                        <div><b>Total Submissions: </b>{{this.totalSubs}}</div>
+                        <p>Note: higher ranking number, higher relative quality</p>
+                        <div>
+                            <b>Comments From Markers:</b>
+                            <ul>
+                                {{#each this.comments}}
+                                <li>{{this.comment}}</li>
+                                {{/each}}
+                            </ul>
+                        </div>
+                    {{else}}
+                        <a href="/submission/{{this.activityId}}">Add/Edit Submission</a>
+                    {{/if}}
+                {{else}}
+                    <p>You have not made a submission.</p>
+                    {{#if this.beforeDeadline}}
+                        <a href="/submission/{{this.activityId}}">Add/Edit Submission</a>
+                    {{/if}}
+                {{/if}}   
+            </div>
+            
+        {{/if}}
+    </div>
+    
+{{/each}}
+

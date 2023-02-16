@@ -1,0 +1,34 @@
+<h2 class="d-flex justify-content-center m-3">Judging Page</h2>
+<h4 class="d-flex justify-content-center m-3">{{courseTitle}}</h4>
+<div>
+
+    <div class="d-flex justify-content-between px-3">
+        <div class="border border-dark w-50 p-3 m-3  overflow-auto">
+            <pre><code>{{this.leftCode}}</code></pre>
+        </div>
+        <div class="border border-dark w-50 p-3 m-3  overflow-auto">
+            <pre><code>{{this.rightCode}}</code></pre>
+        </div>
+    </div> 
+    <div class="px-3">
+        <b>Grading Instructions:</b>
+        {{this.gradingInstrs}}
+    </div>
+    <div>
+        <form method="POST" action="/judging/{{this.id}}/0" class="d-flex">
+            <div class="d-flex flex-column w-50 p-3">
+                <input type="submit" class="btn btn-dark mb-2" value="left is better"/>
+                <label class="form-label">Comments</label>
+                <textarea name="leftComments" class="form-control"></textarea>
+                <input type="hidden" name="leftId" value="{{this.leftId}}" />
+            </div>
+            <div class="d-flex flex-column w-50 p-3">
+                <input type="submit" formaction="/judging/{{this.id}}/1" class="btn btn-dark mb-2" value="right is better"/>
+                <label class="form-label">Comments</label>
+                <textarea name="rightComments" class="form-control"></textarea>
+                <input type="hidden" name="rightId" value="{{this.rightId}}" />
+            </div>
+            <input type="hidden" name="cmpId" value="{{this.cmpId}}" />
+        </form>
+    </div>
+</div>

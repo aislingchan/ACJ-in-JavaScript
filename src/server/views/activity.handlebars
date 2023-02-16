@@ -1,0 +1,42 @@
+<h2 class="d-flex justify-content-center m-3">Activity Set Up Page</h2>
+{{#if isSuccess}}
+<p class="p-4 fw-bold text-success ">Activity was created successfully</p>
+{{/if}}
+{{#if isFail}}
+<p class="p-4 fw-bold text-danger">Something went wrong when creating the activity</p>
+{{/if}}
+<form method="POST" action="/activity" class="d-flex flex-column px-5" enctype="multipart/form-data">
+    <div class="m-3">
+        <label class="form-label">Title:</label>
+        <input name="title" type="text" required class="form-control"/>
+    </div>
+    <div class="m-3">
+        <label class="form-label">Due Date:</label>
+        <input name="dueDate" type="date" required class="form-control"/> 
+    </div>
+    <div class="m-3">
+        <label class="form-label">Submission Instructions:</label>
+        <textarea name="submissionInstrs" required class="form-control"></textarea> 
+    </div>
+    <div class="m-3">
+        <label class="form-label">Grading Instructions:</label>
+        <textarea name="gradingInstrs" required class="form-control"></textarea>
+    </div>
+    <div class="m-3">
+        <label class="form-label">Submission Type:</label>
+        <textarea name="submissionType" required class="form-control"></textarea>
+    </div>
+    <div class="m-3">
+        <label class="form-label">List of Students (CSV)</label>
+        <input class="form-control" type="file" name="students">
+    </div>
+    <div class="m-3">
+        <label class="form-label">List of Markers (CSV)</label>
+        <input class="form-control" type="file" name="markers">
+    </div>
+    <div class="m-3">
+        <label class="form-label">Number of rounds</label>
+        <input class="form-control" type="number" name="maxRounds" min="1">
+    </div>
+    <input type="submit" value="Submit" class="btn btn-secondary"/>
+</form>

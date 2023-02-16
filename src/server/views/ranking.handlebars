@@ -1,0 +1,16 @@
+<h2 class="d-flex justify-content-center m-3">{{courseTitle}}: Results</h2>
+<p class="mx-3">Note: The higher the ranking number, the higher the relative quality</p>
+<table class="table table-striped px-2 mx-3 w-auto">
+    <tr class="table-dark">
+        <th>Rank</th>
+        <th>User ID</th>
+        <th>Final Score</th>
+    </tr>   
+    {{#each subs}}
+    <tr class="table-light">
+        <th>{{this.rank}}</th>
+        <td>{{this.user_id}}</td>
+        <td>{{this.latestScore}}</td>
+    </tr>
+    {{/each}}
+</table>
