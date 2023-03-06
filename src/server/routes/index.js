@@ -153,9 +153,10 @@ router.get('/judging/:activity_id', async function (req, res, next) {
         dueComps = await acjDB.getIncompleteComparisons(db, resource.round, req.params.activity_id);
         if(dueComps.length > 0){
             const cmp = await acj.getAComparison(resource, resource.round, userIdObj.id, [], db);
+            //console.log(cmp);
             const leftSub = await acjDB.getAcjSubmission(db, cmp.left_id);
             const rightSub = await acjDB.getAcjSubmission(db, cmp.right_id);
-            console.log(`left_id: ${cmp.left_id}. right_id: ${cmp.right_id}`);
+            //console.log(`left_id: ${cmp.left_id}. right_id: ${cmp.right_id}`);
             acjDB.closeDbConn(db);
             res.render('judging', {
                 isAuthenticated: req.session.isAuthenticated,
@@ -175,7 +176,15 @@ router.get('/judging/:activity_id', async function (req, res, next) {
             let subs = await acjDB.getAcjSubmissions(db, req.params.activity_id);
             let ranking = []
             for(subId in subs){
-                ranking.push(subs[subId]);
+                const userData = await acjDB.getAcjUser(db, subs[subId].user_id);
+                //console.log(username);
+                const rankingEntry = {
+                    rank: subs[subId].rank,
+                    username: userData.username,
+                    latestScore: subs[subId].latestScore,
+                    subId: subId
+                }
+                ranking.push(rankingEntry);
             }
             ranking.sort(acj.cmp3).reverse();
             acjDB.closeDbConn(db);
@@ -224,6 +233,31 @@ router.post('/judging/:activity_id/:decision', async function(req, res, next) {
     catch(err){
         console.log(err.message);
         res.send("error occurred");
+    }
+});
+
+router.get('/submitted_work/:sub_id', async function (req, res, next) {
+    try{
+        console.log("IN GET ROUTE");
+        console.log(req.params.sub_id);
+        const db = acjDB.openDbConn();
+        let subData = await acjDB.getAcjSubmission(db, req.params.sub_id);
+        let userData = await acjDB.getAcjUser(db, subData.user_id);
+        acjDB.closeDbConn(db);
+        res.render('submitted_work', {
+            isAuthenticated: req.session.isAuthenticated,
+            isTeacher: req.session.isTeacher,
+            rank: subData.rank,
+            code: subData.data,
+            username: userData.username
+        })
+    }
+    catch(err){
+        console.log(err.message);
+        res.render('error', {
+            isAuthenticated: req.session.isAuthenticated,
+            isTeacher: req.session.isTeacher
+        });
     }
 });
 

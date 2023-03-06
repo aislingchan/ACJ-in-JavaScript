@@ -39,12 +39,14 @@
                             </ul>
                         </div>
                     {{else}}
-                        <a href="/submission/{{this.activityId}}">Add/Edit Submission</a>
+                        {{#if this.beforeDeadline}}
+                            <a href="/submission/{{this.activityId}}">Edit Submission</a>
+                        {{/if}}
                     {{/if}}
                 {{else}}
                     <p>You have not made a submission.</p>
                     {{#if this.beforeDeadline}}
-                        <a href="/submission/{{this.activityId}}">Add/Edit Submission</a>
+                        <a href="/submission/{{this.activityId}}">Add Submission</a>
                     {{/if}}
                 {{/if}}   
             </div>

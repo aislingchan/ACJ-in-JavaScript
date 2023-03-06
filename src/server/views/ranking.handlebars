@@ -3,14 +3,16 @@
 <table class="table table-striped px-2 mx-3 w-auto">
     <tr class="table-dark">
         <th>Rank</th>
-        <th>User ID</th>
+        <th>Username</th>
         <th>Final Score</th>
+        <th></th>
     </tr>   
     {{#each subs}}
     <tr class="table-light">
         <th>{{this.rank}}</th>
-        <td>{{this.user_id}}</td>
+        <td>{{this.username}}</td>
         <td>{{this.latestScore}}</td>
+        <td><a href="/submitted_work/{{this.subId}}" target="_blank">View Submission</a></td>
     </tr>
     {{/each}}
 </table>

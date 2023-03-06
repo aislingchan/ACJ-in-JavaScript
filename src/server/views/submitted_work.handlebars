@@ -1,0 +1,12 @@
+<h2 class="d-flex justify-content-center m-3">Submitted Work</h2>
+<div class="m-3">
+    {{#if isTeacher}}
+        <div>
+            <b>Submitter: </b>{{this.username}}
+            <b>Rank: </b>{{this.rank}}
+        </div>
+        <div class="border border-dark w-auto p-3 m-3  overflow-auto">
+            <pre><code>{{this.code}}</code></pre>
+        </div>        
+    {{/if}}
+</div>
