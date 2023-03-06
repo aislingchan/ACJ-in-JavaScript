@@ -57,6 +57,11 @@ router.post('/activity', async function(req, res, next) {
                 await acjDB.enrollUser(db, markerName, resIdObj.id, 0, 1);
             }
         }
+        // Add creator to marker's list if not there already
+        const creatorIsEnrolled = await acjDB.isEnrolled(db, req.session.account?.username, resIdObj.id);
+        if(!creatorIsEnrolled){
+            await acjDB.enrollUser(db, req.session.account?.username, resIdObj.id, 0, 1);
+        }
         acjDB.closeDbConn(db);
         res.render('activity', {
             isAuthenticated: req.session.isAuthenticated,
