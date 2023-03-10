@@ -126,7 +126,11 @@ router.post('/submission/:activityId', async function(req, res, next) {
         res.redirect(`/status`);
     }
     catch{
-        res.send("error occurred. File not uploaded");
+        console.log(err.message);
+        res.render('error', {
+            isAuthenticated: req.session.isAuthenticated,
+            isTeacher: req.session.isTeacher
+        });
     }
 });
 
@@ -139,7 +143,11 @@ router.post('/submission/delete/:activityId', async function(req, res, next) {
         res.redirect(`/status`);
     }
     catch{
-        res.send("error occurred");
+        console.log(err.message);
+        res.render('error', {
+            isAuthenticated: req.session.isAuthenticated,
+            isTeacher: req.session.isTeacher
+        });
     }
 });
 
@@ -202,8 +210,11 @@ router.get('/judging/:activity_id', async function (req, res, next) {
         }
     }
     catch(err){
-        console.log(err);
-        res.send("Error occurred");
+        console.log(err.message);
+        res.render('error', {
+            isAuthenticated: req.session.isAuthenticated,
+            isTeacher: req.session.isTeacher
+        });
     }
 });
 
@@ -237,7 +248,10 @@ router.post('/judging/:activity_id/:decision', async function(req, res, next) {
     }
     catch(err){
         console.log(err.message);
-        res.send("error occurred");
+        res.render('error', {
+            isAuthenticated: req.session.isAuthenticated,
+            isTeacher: req.session.isTeacher
+        });
     }
 });
 

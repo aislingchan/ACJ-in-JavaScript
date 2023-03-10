@@ -129,7 +129,8 @@ router.post('/redirect', async function (req, res, next) {
                     await acjDB.insertUser(db,req.session.account?.username, role);
                 }
                 // Teacher's are the only users able to create activities
-                //req.session.isTeacher = role === 1;
+                req.session.isTeacher = role === 1;
+                //req.session.isTeacher = 1;
                 acjDB.closeDbConn(db);
                 res.redirect(state.redirectTo);
             } catch (error) {
