@@ -12,8 +12,8 @@
 %==============================================================================
 %% METADATA
 \title{Level 4 Project Report Template}
-\author{John H. Williamson}
-\date{September 14, 2018}
+\author{Aisling Chan}
+\date{March 31, 2023}
 
 \maketitle
 
@@ -170,10 +170,65 @@ What did other people do, and how is it relevant to what you want to do?
 
 %==================================================================================================================================
 \chapter{Analysis/Requirements}
-What is the problem that you want to solve, and how did you arrive at it?
-\section{Guidance}
-Make it clear how you derived the constrained form of your problem via a clear and logical process. 
+The main aim of this project was to create a web application that allows markers to assess work from university students using ACJ. The majority of the requirements were gathered in the early stages of the project. They were later refined through weekly meetings with Jeremy Singer, a senior lecturer at the University of Glasgow who proposed this project, and consultation with Niall Barr, a senior learning technology developer at the University of Glasgow who authored a PHP implementation of ACJ. The requirements of this project were explored by writing user stories. Two types of users were decided upon, students and markers. The marker role was used to represent any university staff member. The user stories are listed below.
 
+\section{User Stories}
+\textbf{Student:}
+\begin{itemize}
+    \item
+        As a student, I want to be able to log in using my university email account.
+    \item
+        As a student, I want to upload my work, so that it can be graded.
+    \item
+        As a student, I want to see a preview of the file that I have uploaded so that I can check that I submitted the correct file.
+    \item
+        As a student, I want to be able to remove a file I have submitted in case I have submitted the wrong file.
+    \item
+        As a student, I want to see my grade and feedback on my work, so that I can know what I need to improve on.
+    \item
+        As a student, I want to see the submission status of all of my assignments so that I know which assignments I still need to submit work for.
+    \item
+        As a student, I want to see submission details (deadline, file type, submission instructions) for an assignment so that I know how and when I should submit my work.
+    
+\end{itemize}
+\textbf{Marker:}
+\begin{itemize}
+    \item
+        As a marker, I want to be able to log in using my university email account.
+    \item
+        As a marker, I want to be able to perform a pairwise comparison of submissions, so that I can rank the submissions in order of quality.
+    \item
+        As a marker, I want to have two submissions displayed side-by-side on the screen, so I can easily compare the two.
+    \item
+        As a marker, I want to be able to give comments on each submission, so that the student can receive feedback on their work.
+    \item
+        As a marker, I want to see a ranking table of all of the submissions, so that I can know how well each student performed.
+    \item
+        As a marker, I want to see the submission associated with each entry in the ranking table.
+    \item
+        As a marker, I want to create a new assignment, so that my students can submit their work and have it graded using ACJ.
+    \item
+        As a marker, I want to set a deadline for an assignment, so that the students can know when their work is due.
+    \item
+        As a marker, I want to specify the types of files that can be submitted for an assignment.
+    \item
+        As a marker, I want to specify submission instructions so that students know what type of work should be submitted.
+    \item
+        As a marker, I want to specify grading instructions so that I can give other markers guidance on how to rank the submissions.
+    \item
+        As a marker, I want to add multiple markers to a particular assignment, so that the submissions can be ranked by many people.
+    \item
+        As a marker, I want to include students as markers for a particular assignment, so that students can review their peers' work.
+    \item
+        As a marker, I want to add multiple students to a particular assignment, so that only my students can submit work.
+    
+\end{itemize}
+
+\section{Non-Functional Requirements}
+\begin{itemize}
+    \item
+        
+\end{itemize}
 %==================================================================================================================================
 \chapter{Design}
 How is this problem to be approached, without reference to specific implementation details? 
