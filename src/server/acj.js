@@ -14,12 +14,8 @@ class Acj {
             let sc = 0;
             let cmprank;
             if(this.papers[pID].comparisons.length){
-                console.log("PAPERS");
-                console.log(this.papers);
                 for(let cmp of this.papers[pID].comparisons){
                     if(round <= 4){
-                        console.log("CMP");
-                        console.log(cmp);
                         cmprank = this.papers[cmp.withID].rank;
                         if(cmp.won){
                             sc += 1;
@@ -74,7 +70,6 @@ class Acj {
         let targetsList = [];
         let toPairList = [];
         let pairedList = {};
-        let pairedCount = 0;
 
         for(let pID in this.papers){
             //Calculate a score for each paper based on its past comparisons
@@ -264,8 +259,6 @@ function nextOffsetAlternating(after, begin, count){
 async function prepareNewAcjRound(db, resource){
     const engine = new Acj();
     let subs = await database.getAcjSubmissions(db, resource.id);
-    console.log("subs");
-    console.log(subs);
     for(let subID in subs){
         let acjPaper = new Submission(subID);
         acjPaper._latestScore = subs[subID].latestScore;
@@ -298,9 +291,8 @@ async function prepareNewAcjRound(db, resource){
     }
     const pairings = engine.getPairingsByRank();
     resource.round += 1;
-    console.log(`Resource round: ${resource.round}`);
     await database.updateResource(db,resource);
-    await logSubmissionData(db, resource);
+    //await logSubmissionData(db, resource);
     for(let p of pairings){
         let cmpr = new acjComparison();
         cmpr.activity_id = resource.id;
@@ -314,7 +306,6 @@ async function prepareNewAcjRound(db, resource){
 }
 
 async function getAComparison(resource, round, user_id, avoid, db){
-    console.log("In getAComparison");
     let takeComp;
     let dueComps = await database.getUsersIncompleteComparisons(db, round, user_id, resource.id);
     if(dueComps.length > 0){
@@ -326,21 +317,16 @@ async function getAComparison(resource, round, user_id, avoid, db){
         takeComp = false;
         dueComps = await database.getUnallocatedComparisons(db, round, resource.id);
         if(dueComps.length == 0){
-            console.log("dueComps.length == 0");
             await clearOverdueComps(resource, db);
-            console.log("after clearOverdueComps");
             dueComps = await database.getUnallocatedComparisons(db, round, resource.id);
             
         }
         let n = 0;
         while((takeComp == false) && (n < dueComps.length)){
             if(avoid.indexOf(dueComps[n].id) == -1){
-                console.log("found an available comparison that is not on the avoid list");
                 takeComp = dueComps[n];
                 takeComp.allocated = new Date().toISOString();
                 takeComp.user_id = user_id;
-                console.log("takeComp");
-                console.log(takeComp);
                 await database.updateComparison(db,takeComp);
             }
             n++;
@@ -350,10 +336,7 @@ async function getAComparison(resource, round, user_id, avoid, db){
 }
 
 async function clearOverdueComps(resource, db, timelimit = 600){
-    console.log("In clearOverdueComps");
     let dueComps = await database.getIncompleteComparisons(db, resource.round);
-    console.log("after getIncompleteComparisons. Due comps:");
-    console.log(dueComps);
     const pretime = new Date() - timelimit;
     for(let d in dueComps){
         let cmpDate = new Date(d.allocated);

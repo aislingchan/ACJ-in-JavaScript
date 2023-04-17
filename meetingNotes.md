@@ -132,3 +132,109 @@
 
 ### Plan for next two weeks:
 * Finish creating all of the pages (judging page, submission page, set up page, status page)
+
+## Week 17 (2 Feb 2023)
+* Meeting cancelled
+
+## Week 18 (8 Feb 2023)
+
+* I demonstrated the new functionality I had added (lecturers can create an assignment, students can upload their coursework, markers are given pairs of submissions to judge, judging ends when a user-defined number of rounds of ACJ have been conducted, the final ranking is then displayed.)
+* Jeremy suggested adding a few more features including code highlighting, allowing teachers to upload a CSV file of students and markers when creating an activity, letting users see the submission associated with each entry in the table ranking, and showing students a preview of the file they have submitted.
+* We also talked about writing up documentation for the project including information about installation and database management etc.
+
+### Plan for next week:
+* Add the features mentioned above
+
+## Week 19 (16 Feb 2023)
+
+* I showed Jeremy the new features I had added (code highlighting, teachers can add students and markers to an assignment by uploading a CSV file containing the email addresses of the participants, and students can see a preview of the file they have submitted)
+* We arranged a meeting with Niall Barr on 23 Feb to do a think aloud study.
+
+### Plan for next week:
+* Prepare for think aloud study with Niall Barr
+
+## Week 20 (23 Feb 2023)
+
+* Conducted a think aloud study with Niall Barr.
+* Made an audio recording of the session.
+
+### Plan for next week:
+* Listen to the audio of the evaluation and write it up.
+
+## Week 21 (2 Mar 2023)
+* Meeting cancelled due to illness
+
+## Week 22 (10 Mar 2023)
+
+* Jeremy suggested I get an extension on my project due to my being ill for a week.
+* We talked about the chapters of the dissertation and what kind of work should be discussed in each chapter.
+
+### Plan for next week:
+* Begin writing dissertation.
+
+## Week 23 (16 Mar 2023)
+
+* I showed Jeremy what I had written for the Requirements chapter of the dissertation.
+* He suggested grouping the user stories by theme or phase, giving the requirements numbers or unique names (log in story, view submission story), having generic user requirements, and including non-functional requirements.
+* I asked him why it was important to implement ACJ in JavaScript as opposed to PHP and he replied that it is more widely deployed, easier to refactor, and possibly more efficient.
+* He mentioned including the ACJ simulations to prove that the ACJ engine worked.
+* We talked about what should be incuded in the Design chapter.
+* Next meeting Wed 22 March 10:30am
+
+### Plan for next week:
+* Begin writing Design chapter of dissertation and adjust the Requirements chapter.
+
+## Week 24 (22 Mar 2023)
+
+* We talked about my difficulties with getting any coursework done.
+* We talked about submitting a good cause claim.
+* Jeremy suggested talking to the student support team.
+* Next meeting Fri 24 March 2:30pm
+
+### Plan for next meeting
+
+* Write the introduction for dissertation
+
+## Week 24 (24 Mar 2023)
+
+* We looked at the paragraphs I had written for the introduction.
+* Jeremy suggested mentioning that ACJ was used in Glasgow Uni, including an image of Niall's ACJ project
+* We talked about writing the background and what type of information should be included.
+
+### Plan for next meeting
+
+* Write the background for dissertation and add to introduction.
+
+## Week 25 (29 Mar 2023)
+
+* We talked about what kinds of papers to include in the background.
+* Jeremy said to email Niall Barr to see if he knew of a paper with ACJ pseudocode
+* We talked about pre-existing ACJ products to mention in the background section.
+
+### Plan for next meeting
+
+* Write the background for dissertation.
+
+## Week 26 (5 Apr 2023)
+
+* Had a meeting with Jeremy Singer and Niall Barr.
+* Niall mentioned that he did not know of any ACJ papers with pseudocode, only ones with mathematical equations.
+* Niall agreed to write some pseudocode describing his ACJ algorithm.
+* Jeremy suggested writing bullet points for the design and implementation chapters.
+* We discussed what should be included in the design chapter.
+* We also talked about pre-existing ACJ products.
+
+### Plan for next meeting
+
+* Write the design chapter for dissertation.
+
+## Week 27 (12 Apr 2023)
+
+* We looked at the parts I had written so far so the design chapter.
+* We talked about what to add to the background chapter and implementation chapter.
+
+## Week 27 (14 Apr 2023)
+
+* We had a look at the bulletpoints I had written in the design and implementation chapter.
+* Jeremy suggested adding more screenshots and wireframes to the design chapter.
+* We talked about how to write up the think aloud study in the evaluation chapter.

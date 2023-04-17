@@ -36,7 +36,6 @@ function dropTables(db){
     db.run("DROP TABLE acjComment");
 }
 
-//TO BE TESTED
 function addDummyAcjResources(db, n){
     return new Promise((resolve, reject) => {
         let query = "INSERT INTO acjResource(created, round, title, dueDate, submissionInstrs, gradingInstrs, submissionType, maxRounds) VALUES (?,?,?,?,?,?,?,?)";
@@ -52,7 +51,6 @@ function addDummyAcjResources(db, n){
     });
 }
 
-//TO BE TESTED
 function addDummyAcjSubmissions(db, n){
     return new Promise((resolve, reject) => {
         let query = "INSERT INTO acjSubmission(activity_id, rank, latestScore, user_id, uploaded, data, submissionType) VALUES (?,?,?,?,?,?,?)";
@@ -67,13 +65,24 @@ function addDummyAcjSubmissions(db, n){
     });
 }
 
-//TO BE TESTED
-function addDummyUsers(db, n){
+function addDummyUsers(db){
     return new Promise((resolve, reject) => {
         let query = "INSERT INTO acjUser(username, role) VALUES (?,?)";
-        for(let i=0; i<n; i++){
-            console.log(`Adding user ${i}`);
-            db.run(query, [Math.random().toString(36).slice(2), 0], (err) => {
+        // add students
+        const studentUsernames = ["1234567A@student.gla.ac.uk","2345678B@student.gla.ac.uk","3456789C@student.gla.ac.uk","3462708C@student.gla.ac.uk",
+                                    "8432708G@student.gla.ac.uk","6862709H@student.gla.ac.uk","5462264I@student.gla.ac.uk","2464504J@student.gla.ac.uk","8694708K@student.gla.ac.uk",
+                                    "9628508L@student.gla.ac.uk"];
+        for(let i=0; i<studentUsernames.length; i++){
+            console.log(`Adding student ${studentUsernames[i]}`);
+            db.run(query, [studentUsernames[i], 0], (err) => {
+                if (err) return console.error(err.message);
+            });
+        }
+        // add markers
+        const markerUsernames = ["john.doe@glasgow.ac.uk","jane.doe@glasgow.ac.uk"];
+        for(let j=0; j<markerUsernames.length; j++){
+            console.log(`Adding marker ${markerUsernames[j]}`);
+            db.run(query, [markerUsernames[j], 1], (err) => {
                 if (err) return console.error(err.message);
             });
         }
@@ -220,8 +229,6 @@ function retrieveAcjComparison(db, id){
         db.all(query, [id], (err, rows) => {
             if (err) return console.error(err.message);
             if (rows.length != 0){
-                // console.log("In retrieveAcjComparison");
-                // console.log(rows);
                 resolve(rows[0]);
             }
         });
@@ -234,7 +241,6 @@ function retrieveAcjComparisonMatching(db, field, val){
     return new Promise((resolve, reject) => {
         db.all(query, [val], (err, rows) => {
             if (err) return console.error(err.message);
-            //console.log(`Rows retrieved: ${rows}`);
             resolve(rows);
         });
     });
@@ -564,13 +570,20 @@ function closeDbConn(db){
 
 async function testingStuff(){
     let db = openDbConn();
-    //const sub = await getAcjSubmission(db, 2);
-    //console.log(sub);
-    //console.log(y);
-    const u = await getAcjUser(db,)
-    //await insertUser(db, "qwertyuiop", 1);
-    //await displayTables(db);
+    //dropTables(db);
     //await initializeDatabase(db);
+    //await addDummyUsers(db);
+    // const studentUsernames = ["1234567A@student.gla.ac.uk","2345678B@student.gla.ac.uk","3456789C@student.gla.ac.uk","3462708C@student.gla.ac.uk",
+    //                                 "8432708G@student.gla.ac.uk","6862709H@student.gla.ac.uk","5462264I@student.gla.ac.uk","2464504J@student.gla.ac.uk","8694708K@student.gla.ac.uk",
+    //                                 "9628508L@student.gla.ac.uk"];
+    for (let i=2; i<7; i++){
+        let sub = {actId: 1, userId: i};
+        await insertSubmission(db, sub);
+    }
+    for (let i=9; i<14; i++){
+        let sub = {actId: 1, userId: i};
+        await insertSubmission(db, sub);
+    }
     closeDbConn(db);
 }
 

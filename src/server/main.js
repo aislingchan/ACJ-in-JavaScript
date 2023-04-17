@@ -1,22 +1,70 @@
-//import acj and database functions
-// import * as acj from "./acj.js";
-// import * as acjDb from "./database.js";
-// import sqlite3 from 'sqlite3';
-// import { rankingLogger } from "./rankingLogger.js";
-
 const acj = require('./acj');
 const acjDb = require('./database');
 const sqlite3 = require('sqlite3');
-const fs = require('fs');
+const fs = require('fs/promises');
 
-async function setUpDatabase(db){
+async function setUpDatabase(){
+    const db = acjDb.openDbConn();
     await acjDb.initializeDatabase(db);
     await acjDb.clearTables(db);
-    //await acjDb.displayTables(db);
-    await acjDb.addDummyAcjResources(db,3);
-    await acjDb.addDummyAcjSubmissions(db, 10);
-    await acjDb.addDummyUsers(db, 3);
-    //await acjDb.displayTables(db);
+
+    await acjDb.addDummyUsers(db);
+
+    const exampleRes = {
+        created: new Date(),
+        title: "Intro to Java Programming (SAMPLE FOR TESTING)",
+        dueDate: new Date(),
+        submissionInstrs: "Please make sure your code has comments and proper formatting",
+        gradingInstrs: "This activity aims to examine a student's understanding of asynchronous programming",
+        submissionType: "Java files",
+        maxRounds: 3
+    }
+    await acjDb.insertResource(db, exampleRes)
+
+    const studentUsernames = ["1234567A@student.gla.ac.uk","2345678B@student.gla.ac.uk","3456789C@student.gla.ac.uk","3462708C@student.gla.ac.uk",
+                                    "8432708G@student.gla.ac.uk","6862709H@student.gla.ac.uk","5462264I@student.gla.ac.uk","2464504J@student.gla.ac.uk","8694708K@student.gla.ac.uk",
+                                    "9628508L@student.gla.ac.uk"];
+    for(let i=0; i<studentUsernames.length; i++){
+        console.log(`Enrolling student ${studentUsernames[i]}`);
+        await acjDb.enrollUser(db, studentUsernames[i], 1, 1, 0);
+    }
+    const markerUsernames = ["john.doe@glasgow.ac.uk","jane.doe@glasgow.ac.uk"];
+    for(let i=0; i<markerUsernames.length; i++){
+        console.log(`Enrolling marker ${markerUsernames[i]}`);
+        await acjDb.enrollUser(db, markerUsernames[i], 1, 0, 1);
+    }
+
+    for(let i=1; i<11; i++){
+        const data = await fs.readFile(`../files-for-testing/java-samples/sample${i}.java`, { encoding: 'utf8' });
+        const bufData = Buffer.from(data);
+
+        const userObj = await acjDb.getAcjUserFromUsername(db, studentUsernames[i-1]);
+        const actObj = await acjDb.getAcjResourceFromTitle(db, "Intro to Java Programming (SAMPLE FOR TESTING)");
+
+        const exampleSub = {
+            actId: actObj.id,
+            userId: userObj.id,
+            data: bufData,
+            subType: null
+        }
+
+        await acjDb.insertSubmission(db, exampleSub); 
+    }
+
+    if(process.argv[2]){
+        console.log(`Enrolling user ${process.argv[2]}`);
+        enrolUserForTesting(process.argv[2]);
+    }
+
+}
+
+//Enrols a given user, as student and marker, into the sample activity that is already in the database.
+//Note: username is an email address (case sensitive).
+async function enrolUserForTesting(username){
+    const db = acjDb.openDbConn();
+
+    await acjDb.enrollUser(db, username, 1, 1, 1);
+    acjDb.closeDbConn(db);
 }
 
 async function runRounds(db, roundNum){
@@ -27,7 +75,6 @@ async function runRounds(db, roundNum){
     await acj.prepareNewAcjRound(db, res);
 
     for(let i=0; i<roundNum; i++){
-        //await acjDb.displayTables(db);
         console.log("Begin Judging");
 
         //Judge each pairing
@@ -37,14 +84,8 @@ async function runRounds(db, roundNum){
         while(dueComps.length > 0){
             console.log("In judging loop")
             let currentCmp = await acj.getAComparison(res, res.round, usr.id, avoid, db);
-            // console.log("Got a comparison object:");
-            // console.log(currentCmp);
-            // console.log("displaying updated comparison table");
-            // await acjDb.displayTable(db, "acjComparison");
             await makeDecision(db, currentCmp, usr.id, 0.05);
             dueComps = await acjDb.getIncompleteComparisons(db, res.round, res.id);
-            //console.log(dueComps);
-            //acjDb.displayTable(db, "acjComparison");
         }
         // recalculate ranks. Creates new pairings even though they may not be used
         await acj.prepareNewAcjRound(db, res);
@@ -83,9 +124,6 @@ async function makeDecision(db, cmp, userId, percentError){
 //     '10': 8
 // }
 
-//log info on the submissions and comparisons for this round
-//begin another round and repeat until x number of rounds completed
-//return ranking of all submissions
 
 async function runACJ(){
     const db = acjDb.openDbConn();
@@ -98,6 +136,11 @@ async function runACJ(){
 }
 
 //runACJ();
+
+if (require.main === module){
+    setUpDatabase();
+}
+
 
 module.exports = {
     runACJ

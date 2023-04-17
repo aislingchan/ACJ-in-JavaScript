@@ -17,10 +17,6 @@ let authRouter = require('./routes/auth');
 let app = express();
 const hbs = exphbs.create();
 
-/**
- * Using express-session middleware for persistent user session. Be sure to
- * familiarize yourself with available options. Visit: https://www.npmjs.com/package/express-session
- */
  app.use(session({
     secret: process.env.EXPRESS_SESSION_SECRET,
     resave: false,
